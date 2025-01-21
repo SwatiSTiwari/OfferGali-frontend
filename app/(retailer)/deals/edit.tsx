@@ -3,12 +3,11 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
-export default function NewDeal() {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [expirationDate, setExpirationDate] = useState('');
-  const [terms, setTerms] = useState('');
-  const [redemptionMethod, setRedemptionMethod] = useState('');
+export default function EditDeal() {
+  const [title, setTitle] = useState('Summer Special Offer');
+  const [description, setDescription] = useState('Get amazing discounts on summer collection');
+  const [expirationDate, setExpirationDate] = useState('15-06-2024');
+  const [terms, setTerms] = useState('Terms and conditions apply');
   const router = useRouter();
 
   return (
@@ -17,7 +16,7 @@ export default function NewDeal() {
         <TouchableOpacity onPress={() => router.back()}>
           <FontAwesome name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Deal</Text>
+        <Text style={styles.headerTitle}>Edit Deal</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -29,7 +28,6 @@ export default function NewDeal() {
               style={styles.input}
               value={title}
               onChangeText={setTitle}
-              placeholder="Enter deal title"
             />
           </View>
 
@@ -39,7 +37,6 @@ export default function NewDeal() {
               style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
-              placeholder="Enter deal description"
               multiline
               numberOfLines={4}
             />
@@ -56,7 +53,7 @@ export default function NewDeal() {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Expiration Date*</Text>
             <TouchableOpacity style={styles.input}>
-              <Text style={styles.dateText}>dd-mm-yyyy</Text>
+              <Text>{expirationDate}</Text>
               <FontAwesome name="calendar" size={20} color="#666" />
             </TouchableOpacity>
           </View>
@@ -67,7 +64,6 @@ export default function NewDeal() {
               style={[styles.input, styles.textArea]}
               value={terms}
               onChangeText={setTerms}
-              placeholder="Enter terms and conditions"
               multiline
               numberOfLines={4}
             />
@@ -85,10 +81,10 @@ export default function NewDeal() {
 
       <View style={styles.footer}>
         <TouchableOpacity 
-          style={styles.submitButton}
+          style={styles.saveButton}
           onPress={() => router.back()}
         >
-          <Text style={styles.submitButtonText}>Submit Deal</Text>
+          <Text style={styles.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -156,9 +152,6 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 10,
   },
-  dateText: {
-    color: '#666',
-  },
   selectText: {
     color: '#666',
   },
@@ -167,13 +160,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
-  submitButton: {
+  saveButton: {
     backgroundColor: '#FF4B55',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
-  submitButtonText: {
+  saveButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',

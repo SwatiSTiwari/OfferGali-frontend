@@ -31,9 +31,15 @@ export default function OnboardingScreen() {
 
       <View style={styles.buttonContainer}>
         <Link href="/(auth)/register" asChild>
-          <Text style={styles.button}>Get Started</Text>
+          <Text style={styles.button}>Get Started as customer </Text>
         </Link>
       </View>
+
+      <View style={styles.buttonContainer}>
+        <Link href="/(retailer)/register" asChild>
+          <Text style={styles.button}>Get Started as retailer</Text>
+        </Link>
+        </View>
     </View>
   );
 }
