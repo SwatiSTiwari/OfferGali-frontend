@@ -1,57 +1,69 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+
 
 export default function RetailerLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+ 
 
+  const logo = require('../../assets/logo.png');
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image 
-          source={{ uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-liVRndZod8g56wS47PgZlwjLB7yX69.png" }}
-          style={styles.logo}
-        />
-        <Text style={styles.title}>Retailer Sign In</Text>
-        <Text style={styles.subtitle}>Sign in to your retail account</Text>
+        <Text style={styles.headerTitle}>Retailer Sign In</Text>
       </View>
 
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <FontAwesome name="envelope" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+      <View style={styles.iconContainer}>
+        <Image source={logo} style={styles.logo} />
+      </View>
+
+      <View style={styles.formContainer}>
+        <Text style={styles.formTitle}>Sign in to your retail account</Text>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Email</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholderTextColor="#999"
+            />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholderTextColor="#999"
+            />
+          </View>
         </View>
-
-        <TouchableOpacity style={styles.forgotPassword}>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.loginButton}
           onPress={() => router.push('/(retailer)/dashboard')}
         >
           <Text style={styles.loginButtonText}>Log In</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.forgotPassword}>
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
@@ -67,81 +79,101 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 20,
-    border :"green"
   },
   header: {
-    alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  logo: {
-    width: 60,
-    height: 60,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
+  headerTitle: {
     fontSize: 16,
-    color: '#666',
+    fontWeight: '600',
   },
-  form: {
-    flex: 1,
+  iconContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: 24,
+  },
+  formContainer: {
+    margin: 20,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8F5E9',
+    backgroundColor: '#fff',
+  },
+
+  logo:{
+    width: 150,
+    height: 60,
+
+  },
+  formTitle: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E8F5E9',
     borderRadius: 8,
-    borderColor: 'green',
-    paddingHorizontal: 15,
-    marginBottom: 16,
-    backgroundColor: '#DFF6EB',
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
   },
   inputIcon: {
     marginRight: 10,
+    width: 20,
+    textAlign: 'center',
   },
   input: {
     flex: 1,
-    height: 50,
-    fontSize: 16,
-    backgroundColor: '#DFF6EB',
-  },
-  forgotPassword: {
-    alignItems: 'flex-end',
-    marginBottom: 20,
-  },
-  forgotPasswordText: {
-    color: '#FF4B55',
+    height: 44,
     fontSize: 14,
+    color: '#333',
   },
   loginButton: {
-    backgroundColor: '#FF4B55',
-    padding: 15,
+    backgroundColor: '#FF6B6B',
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
+    marginTop: 8,
   },
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  forgotPasswordText: {
+    color: '#666',
+    fontSize: 14,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 16,
   },
   footerText: {
     color: '#666',
+    fontSize: 14,
   },
   link: {
-    color: '#FF4B55',
-    fontWeight: '600',
+    color: '#2196F3',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
-

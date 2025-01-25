@@ -10,10 +10,10 @@ export default function GeofencingSetup() {
   const [radius, setRadius] = useState(2.8); // miles
 
   const initialRegion = {
-    latitude: 48.8566,
-    longitude: 2.3522,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+    latitude: 20.5937, // Latitude of India
+    longitude: 78.9629, // Longitude of India
+    latitudeDelta: 10,  // Adjusted for a wider view of India
+    longitudeDelta: 10, // Adjusted for a wider view of India
   };
 
   return (
@@ -29,7 +29,7 @@ export default function GeofencingSetup() {
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
-          initialRegion={initialRegion}
+          initialRegion={initialRegion} // Using India's coordinates
         >
           {isEnabled && (
             <Circle
@@ -190,4 +190,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

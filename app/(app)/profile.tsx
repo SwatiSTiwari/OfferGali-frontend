@@ -118,8 +118,8 @@ export default function Profile() {
 
         <Link href="/dashboard" asChild>
           <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="dashboard" size={24} color="#666" />
-            <Text style={styles.navText}>Dashboard</Text>
+            <FontAwesome name="tag" size={24} color="#666" />
+            <Text style={styles.navText}>Deal</Text>
           </TouchableOpacity>
         </Link>
 
