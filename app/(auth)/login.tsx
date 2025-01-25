@@ -25,31 +25,34 @@ export default function Login() {
 
       <View style={styles.form}>
       <View style={styles.inputContainer}>
-          <FontAwesome name="user" size={20} color="#666" style={styles.icon} />
+          <FontAwesome name="user-o" size={20} color="#666" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Username"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
+            autoCapitalize="none"
+            placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <FontAwesome name="lock" size={20} color="#666" style={styles.icon} />
+          <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor="black"
+            placeholderTextColor="***********"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            placeholderTextColor="#999"
           />
         </View>
 
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => router.push('/home')}
+          onPress={() => router.push('/(app)/home')}
         >
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
@@ -63,9 +66,7 @@ export default function Login() {
           <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="facebook" size={20} color="#4267B2" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome name="apple" size={20} color="#000000" />
-          </TouchableOpacity>
+          
         </View>
 
         <View style={styles.footer}>
@@ -88,14 +89,15 @@ const styles = StyleSheet.create({
     marginTop: 60,
     marginBottom: 40,
   },
+  
   logo: {
     width: 150,
     height: 60,
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '600',
     marginBottom: 8,
   },
   subtitle: {
@@ -109,17 +111,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E8F5E9',
     borderRadius: 8,
-    padding: 10,
+    paddingHorizontal: 16,
+    height: 48,
     marginBottom: 16,
   },
   icon: {
-    marginRight: 10,
+    marginRight: 12,
+  },
+  inputIcon:{
+    marginRight: 12,
   },
   input: {
     flex: 1,
     fontSize: 16,
+    color: '#333',
   },
   button: {
     backgroundColor: '#FF4B55',
@@ -163,7 +170,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   link: {
-    color: '#FF4B55',
-    fontWeight: '600',
+    color: '#2196F3',
+    fontWeight: '500',
   },
 });

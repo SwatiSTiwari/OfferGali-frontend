@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
 export default function EditDeal() {
@@ -80,12 +80,42 @@ export default function EditDeal() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.saveButton}
           onPress={() => router.back()}
         >
           <Text style={styles.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.bottomNav}>
+        <Link href="/home" asChild>
+                  <TouchableOpacity style={styles.navItem}>
+                    <FontAwesome name="home" size={24} color="#666" />
+                    <Text style={styles.navText}>Home</Text>
+                  </TouchableOpacity>
+                </Link>
+        
+                <Link href="/analytics" asChild>
+                  <TouchableOpacity style={styles.navItem}>
+                    <FontAwesome name="bar-chart" size={24} color="#666" />
+                    <Text style={styles.navText}>Analytics</Text>
+                  </TouchableOpacity>
+                </Link>
+        
+                <Link href="/dashboard" asChild>
+                  <TouchableOpacity style={styles.navItem}>
+                    <FontAwesome name="tag" size={24} color="#666" />
+                    <Text style={styles.navText}>Deal</Text>
+                  </TouchableOpacity>
+                </Link>
+        
+                <Link href="/profile" asChild>
+                  <TouchableOpacity style={styles.navItem}>
+                    <FontAwesome name="user" size={24} color="#666" />
+                    <Text style={styles.navText}>Profile</Text>
+                  </TouchableOpacity>
+                </Link>
       </View>
     </View>
   );
@@ -114,6 +144,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingBottom: 80, // Add padding to prevent overlap
   },
   form: {
     padding: 20,
@@ -159,6 +190,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: '#eee',
+    backgroundColor: '#fff',
+    position: 'absolute', // Ensure footer stays above bottomNav
+    bottom: 60, // Adjust height to prevent overlap with bottomNav
+    left: 0,
+    right: 0,
   },
   saveButton: {
     backgroundColor: '#FF4B55',
@@ -170,6 +206,26 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  bottomNav: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    backgroundColor: "#fff",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  navItem: {
+    alignItems: "center",
+  },
+  navText: {
+    fontSize: 12,
+    marginTop: 4,
+    color: "#666",
   },
 });
 
