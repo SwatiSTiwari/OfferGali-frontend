@@ -1,15 +1,84 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView ,Image, Platform, Alert, Modal} from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import * as ImagePicker from "expo-image-picker";
+import { addDeal } from "@/api/deals/deals";
 
 export default function NewDeal() {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [expirationDate, setExpirationDate] = useState('');
-  const [terms, setTerms] = useState('');
-  const [redemptionMethod, setRedemptionMethod] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [expirationDate, setExpirationDate] = useState(new Date());
+  const [redemptionMethod, setRedemptionMethod] = useState("QR Code");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") setShowDatePicker(false); // Close picker on Android
+    if (selectedDate) setExpirationDate(selectedDate);
+  };
+
+  // Open Date Picker
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+  };
+
+  // Function to Pick Image from Device
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Required", "Please allow access to photos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImages([...images, result.assets[0].uri]); // Add selected image
+    }
+  };
+
+  const handleAddDeal = async () => {
+    if (!title || !description || !expirationDate || !redemptionMethod || images.length === 0) {
+      Alert.alert("Error", "Please fill all required fields and upload at least one image.");
+      return;
+    }
+  
+    const newDeal = {
+      title,
+      description,
+      images,
+      category: "General", // Provide a default category
+      expiration_date: expirationDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+      redemption_instructions: redemptionMethod,
+      engagements: 0, // Set a default value
+      views: 0, // Set a default value
+    };
+  
+    console.log("Sending Deal Data:", newDeal);
+  
+    const response = await addDeal(newDeal);
+  
+    if (response.success) {
+      Alert.alert("Success", "Deal added successfully");
+      router.push("/dashboard");
+    } else {
+      Alert.alert("Error", response.message || "Failed to add deal");
+    }
+  };
+  
+  
+  
+
+
 
   return (
     <View style={styles.container}>
@@ -30,6 +99,7 @@ export default function NewDeal() {
               value={title}
               onChangeText={setTitle}
               placeholder="Enter deal title"
+              placeholderTextColor="#999"
             />
           </View>
 
@@ -40,53 +110,91 @@ export default function NewDeal() {
               value={description}
               onChangeText={setDescription}
               placeholder="Enter deal description"
+              placeholderTextColor="#999"
               multiline
-              numberOfLines={4}
+              numberOfLines={4
+                
+              }
             />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Upload Images</Text>
-            <TouchableOpacity style={styles.uploadButton}>
-              <FontAwesome name="cloud-upload" size={24} color="#666" />
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+              <FontAwesome name="cloud-upload" size={24} color="#999" />
               <Text style={styles.uploadText}>Tap to upload(max 5 images)</Text>
             </TouchableOpacity>
+
+            <View style={styles.imageContainer}>
+              {images.map((img, index) => (
+                <Image key={index} source={{ uri: img }} style={styles.uploadedImage} />
+              ))}
+            </View>
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Expiration Date*</Text>
-            <TouchableOpacity style={styles.input}>
-              <Text style={styles.dateText}>dd-mm-yyyy</Text>
+            <TouchableOpacity style={styles.input}  onPress={openDatePicker}>
+              <Text style={styles.dateText}>{expirationDate.toDateString()}</Text>
               <FontAwesome name="calendar" size={20} color="#666" />
             </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker value={expirationDate} mode="date" display="default" onChange={onDateChange} />
+            )}
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Terms & Conditions</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={terms}
-              onChangeText={setTerms}
-              placeholder="Enter terms and conditions"
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
+          
           <View style={styles.formGroup}>
             <Text style={styles.label}>Redemption Method*</Text>
-            <TouchableOpacity style={styles.input}>
-              <Text style={styles.selectText}>QR Code</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => setShowDropdown(true)}
+            >
+              <Text style={styles.selectText}>{redemptionMethod}</Text>
               <FontAwesome name="chevron-down" size={16} color="#666" />
             </TouchableOpacity>
           </View>
+
+          {/* Dropdown Modal */}
+          <Modal
+            visible={showDropdown}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowDropdown(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={() => setShowDropdown(false)}
+            >
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={redemptionMethod}
+                  onValueChange={(itemValue) => {
+                    setRedemptionMethod(itemValue);
+                    setShowDropdown(false); // Close modal after selection
+                  }}
+                  style={styles.picker}
+                  dropdownIconColor="#999"
+                >
+                  <Picker.Item label="QR Code" value="QR Code" style={styles.pickerItem} />
+                  <Picker.Item label="Coupon Code" value="Coupon Code" style={styles.pickerItem} />
+                  <Picker.Item label="Physical Voucher" value="Physical Voucher" style={styles.pickerItem} />
+                  <Picker.Item label="Online Redemption" value="Online Redemption" style={styles.pickerItem} />
+                </Picker>
+              </View>
+            </TouchableOpacity>
+          </Modal>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity 
           style={styles.submitButton}
-          onPress={() => router.back()}
+          onPress={async () => {
+            const response=await handleAddDeal();
+              router.push('/dashboard')
+
+          }}
         >
           <Text style={styles.submitButtonText}>Submit Deal</Text>
         </TouchableOpacity>
@@ -186,6 +294,22 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 10,
   },
+  imageContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  pickerItem: {
+    fontSize: 16,
+    color: "#666", // Ensure picker items are visible
+  },
+  uploadedImage: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
   dateText: {
     color: '#666',
   },
@@ -218,6 +342,22 @@ const styles = StyleSheet.create({
   },
   navItem: {
     alignItems: 'center',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    width: '80%',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   navText: {
     fontSize: 12,

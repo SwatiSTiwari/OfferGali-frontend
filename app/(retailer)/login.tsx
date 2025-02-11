@@ -1,16 +1,65 @@
 import { useState } from 'react';
-import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import {loginRetailer,forgotPassword} from '@/api/retailer/retailer';
 
 
 export default function RetailerLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
  
 
+  
   const logo = require('../../assets/logo.png');
+
+
+ 
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter both email and password");
+      return;
+    }
+
+    console.log("Sending login data:", { email, password });
+
+    const response = await loginRetailer(email, password);
+
+    if (response.success) {
+      Alert.alert("Success", "Login successful");
+      console.log(" Navigating to Dashboard...");
+      router.push("/(retailer)/dashboard");
+    } else {
+      console.error("Login Failed:", response.message);
+      Alert.alert("Error", response.message);
+    }
+    return response;
+  };
+
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert("Enter Email", "Please enter your email to reset your password.");
+      return;
+    }
+
+    setLoading(true);
+    const response = await forgotPassword(email);
+    setLoading(false);
+
+    if (response.success) {
+      Alert.alert("Success", response.message);
+      // Navigate to the Reset Password screen and pass email as a parameter
+      router.push(`/reset?email=${email}`);
+    } else {
+      Alert.alert("Error", response.message);
+    }
+  };
+
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -57,18 +106,24 @@ export default function RetailerLogin() {
 
         <TouchableOpacity 
           style={styles.loginButton}
-          onPress={() => router.push('/(retailer)/dashboard')}
+          onPress={async () => {
+            const response = await handleLogin();  // Call handleRegister function
+            if (response?.success) {
+              router.push('/(retailer)/dashboard');  // Navigate only if registration succeeds
+            }
+          }}
         >
-          <Text style={styles.loginButtonText}>Log In</Text>
+          <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.forgotPassword}>
+        <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
-          <Link href="/(retailer)/register" style={styles.link}>Sign up</Link>
+          <TouchableOpacity onPress={() => router.push("/(retailer)/register")}>
+            <Text style={styles.link}>Sign up</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
