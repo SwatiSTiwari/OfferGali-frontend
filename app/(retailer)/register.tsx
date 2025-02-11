@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { registerRetailer } from '@/api/retailer/retailer';
 
 export default function RetailerRegister() {
   const [businessName, setBusinessName] = useState('');
@@ -12,6 +13,35 @@ export default function RetailerRegister() {
   const [password, setPassword] = useState('');
   const router = useRouter();
 
+
+
+
+  const handleRegister = async () => {
+    if (!businessName || !category || !location || !contactNumber || !email || !password) {
+      Alert.alert("Error", "Please fill all fields");
+      return { success: false };
+    }
+  
+    try {
+      const response = await registerRetailer(businessName, category, location, contactNumber, email, password);
+  
+      if (response.success) {
+        Alert.alert("Success", "Retailer registered successfully");
+        return { success: true };
+      } else {
+        console.log("Registration failed:", response.message); // Log error details
+        Alert.alert("Error", response.message);
+        return { success: false };
+      }
+    } catch (error) {
+      console.error("Unexpected error during registration:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+      return { success: false };
+    }
+  };
+  
+
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -23,7 +53,7 @@ export default function RetailerRegister() {
       </View>
 
       <ScrollView style={styles.scrollView}>
-        <View style={styles.iconContainer}>
+        <View style={styles.container}>
         </View>
 
         <View style={styles.formContainer}>
@@ -118,11 +148,17 @@ export default function RetailerRegister() {
           </View>
 
           <TouchableOpacity 
-            style={styles.registerButton}
-            onPress={() => router.push('/(retailer)/dashboard')}
-          >
-            <Text style={styles.registerButtonText}>Register</Text>
-          </TouchableOpacity>
+  style={styles.registerButton}
+  onPress={async () => {
+    const response = await handleRegister();  // Call handleRegister function
+    if (response?.success) {
+      router.push('/(retailer)/login');  // Navigate only if registration succeeds
+    }
+  }}
+>
+  <Text style={styles.registerButtonText}>Register</Text>
+</TouchableOpacity>
+
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
