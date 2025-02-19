@@ -1,16 +1,41 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { loginUser } from '@/api/user/user';
 
 
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
   const logo = require('../../assets/logo.png'); 
+  
+  const handleLogin = async () => {
+    if (!email  || !password) {
+      Alert.alert("Error", "Please fill all fields");
+      return { success: false };
+    }
+  
+    try {
+      const response = await loginUser(email, password);
+  
+      if (response?.success) {
+        Alert.alert("Success", "Login successful");
+        return { success: true };
+      } else {
+        console.log("Registration failed:", response?.message); // Log error details
+        Alert.alert("Error", response?.message);
+        return { success: false };
+      }
+    } catch (error) {
+      console.error("Unexpected error during registration:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+      return { success: false };
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -25,13 +50,12 @@ export default function Login() {
 
       <View style={styles.form}>
       <View style={styles.inputContainer}>
-          <FontAwesome name="user-o" size={20} color="#666" style={styles.inputIcon} />
+          <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
             placeholderTextColor="#999"
           />
@@ -46,13 +70,17 @@ export default function Login() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            placeholderTextColor="#999"
           />
         </View>
 
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => router.push('/(app)/home')}
+          onPress={async () => {
+            const response = await handleLogin(); 
+            if (response?.success) {
+              router.push('/(app)/home');  // Navigate only if registration succeeds
+            }
+          }}
         >
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>

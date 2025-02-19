@@ -1,40 +1,51 @@
 import axios from "axios";
+import * as Location from 'expo-location'
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
+const API_URL = "http://192.168.0.106:3000/api/users"; // Change this to your backend URL if deployed
 
-const API_URL = "http://192.168.0.107:3000/api/retailers"; // Change this to your backend URL if deployed
-
-export const registerRetailer = async (
-  business_name: string,
-  category: string,
-  location: string,
-  phone_number: string,
+export const registerUser= async (
+  name: string,
   email: string,
-  password: string
+  password: string,
+  phone_number: string,
 ) => {
   try {
+    const {status} = await Location.requestForegroundPermissionsAsync();
+
+    if(status !== 'granted'){
+      Alert.alert("Permission Denied", "location permission ia required");
+      return;
+    }
+
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Highest,
+    })
+
+    let latitude = location.coords.latitude
+    let longitude = location.coords.longitude
+
     const response = await axios.post(`${API_URL}/register`, {
-        business_name,
-        category,
-        address: location, // Ensure this matches the backend field
+        name,
         phone_number,
         email,
         password,
-        latitude: 19.0358264, // Set defaults if you don’t collect them
-        longitude: 72.9076564,
+        latitude: latitude, 
+        longitude: longitude,
       });
-
-    const { token, retailer } = response.data;
+    const { token, user } = response.data;
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
 
-    return { success: true, retailer };
+    return { success: true, user };
   } catch (error: any) {
+    console.log(error)
     return { success: false, message: error.response?.data?.message || "Registration failed" };
   }
 };
 
-export const loginRetailer = async (email: string, password: string) => {
+export const loginUser = async (email: string, password: string) => {
   try {
     const response = await axios.post(`${API_URL}/login`, {
       email,

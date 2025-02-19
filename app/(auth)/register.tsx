@@ -1,20 +1,65 @@
 import { useState } from 'react';
-import { View,Image, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, View, Image, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { registerUser } from '@/api/user/user';
 
-export default function Register() {
-  const [username, setUsername] = useState('');
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [password, setPassword] = useState('');
+export default function RegisterUser() {
+  const[register, setRegister] = useState({
+    email: '',
+    name: '',
+    phone_number: '',
+    password: ''
+  })
+
+  const handleChange = (key: keyof typeof register)=>(value: string)=>{
+    setRegister((prev)=>({
+       ...prev, [key]: value
+    }))
+  }
   const router = useRouter();
 
   const logo = require('../../assets/logo.png');
 
+  const googleClick = (e:any)=>{
+      
+  }
+
+
+    const handleRegister = async () => {
+      if (!register.name || !register.email || !register.phone_number || !register.password) {
+        Alert.alert("Error", "Please fill all fields");
+        return { success: false };
+      }
+    
+      try {
+        const response = await registerUser(register.name, register.email, register.password, register.phone_number);
+    
+        if (response?.success) {
+          Alert.alert("Success", "Registered successfully");
+          setRegister({
+            email: '',
+            name: '',
+            phone_number: '',
+            password: ''
+          })
+          return { success: true };
+        } else {
+          console.log("Registration failed:", response?.message); // Log error details
+          Alert.alert("Error", response?.message);
+          return { success: false };
+        }
+      } catch (error) {
+        console.error("Unexpected error during registration:", error);
+        Alert.alert("Error", "Something went wrong. Please try again.");
+        return { success: false };
+      }
+    };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
+        <View style={styles.container}>
           <Image source={logo} style={styles.logo} />
         </View>
         <Text style={styles.title}>Hi!</Text>
@@ -27,20 +72,33 @@ export default function Register() {
           <TextInput
             style={styles.input}
             placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
+            value={register.name}
+            onChangeText={handleChange('name')}
             autoCapitalize="none"
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.inputContainer}>
+          <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={register.email}
+            onChangeText={handleChange('email')}
+            autoCapitalize="none"
+            placeholderTextColor="#999"
+          />
+        </View>
+
+
+        <View style={styles.inputContainer}>
           <FontAwesome name="phone" size={20} color="#666" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Mobile Number"
-            value={mobileNumber}
-            onChangeText={setMobileNumber}
+            value={register.phone_number}
+            onChangeText={handleChange('phone_number')}
             keyboardType="phone-pad"
             placeholderTextColor="#999"
           />
@@ -51,8 +109,8 @@ export default function Register() {
           <TextInput
             style={styles.input}
             placeholder="*********"
-            value={password}
-            onChangeText={setPassword}
+            value={register.password}
+            onChangeText={handleChange('password')}
             secureTextEntry
             placeholderTextColor="#999"
           />
@@ -60,7 +118,12 @@ export default function Register() {
 
         <TouchableOpacity 
           style={styles.signupButton}
-          onPress={() => router.push('/(auth)/profile-setup')}
+          onPress={async () => {
+            const response = await handleRegister(); 
+            if (response?.success) {
+              router.push('/(auth)/login');  // Navigate only if registration succeeds
+            }
+          }}
         >
           <Text style={styles.signupButtonText}>Sign up</Text>
         </TouchableOpacity>
@@ -75,7 +138,7 @@ export default function Register() {
 
         <View style={styles.socialButtons}>
           <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome name="facebook" size={24} color="#1877F2" />
+            <FontAwesome name="google" size={24} color="#1877F2" onAccessibilityAction={googleClick}/>
           </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="apple" size={24} color="#000" />
@@ -87,7 +150,7 @@ export default function Register() {
           <Link href="/(auth)/login" style={styles.link}>Sign in</Link>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
