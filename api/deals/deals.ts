@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.106:3000/api/deals"; // Change this to match your backend
+const API_URL = "http://192.168.0.107:3000/api/deals"; 
 
 /**
  * Add a new deal for a retailer
@@ -59,7 +59,7 @@ export const getAllDeals = async () => {
     return { success: true, deals: response.data };
   } catch (error: any) {
     console.error("API Error:", error.response?.data || error.message);
-    return { success: false, message: error.response?.data?.error || "Failed to fetch deals", deals: [] };
+      return { success: false, message: error.response?.data?.error || "Failed to fetch deals", deals: [] };
   }
 };
 

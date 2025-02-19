@@ -36,7 +36,7 @@ export default function Reset() {
       <Text style={styles.info}>Resetting password for: {email}</Text>
 
       <TextInput style={styles.input} placeholder="New Password" 
-      value={newPassword} onChangeText={setNewPassword} secureTextEntry  placeholderTextColo='#999' />
+      value={newPassword} onChangeText={setNewPassword} secureTextEntry  placeholderTextColor='#999' />
 
       <TouchableOpacity style={styles.button} onPress={handleResetPassword} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? "Resetting..." : "Reset Password"}</Text>
