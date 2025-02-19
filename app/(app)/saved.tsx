@@ -83,7 +83,7 @@ export default function SavedDeals() {
       <Link href="/home" asChild>
           <TouchableOpacity style={styles.navItem}>
             <FontAwesome name="home" size={24} color="#FF4B55" />
-            <Text style={[styles.navText, styles.navTextActive]}>Home</Text>
+            <Text style={[styles.navText, styles.activeNavText]}>Home</Text>
           </TouchableOpacity>
         </Link>
         <Link href="/saved" asChild>

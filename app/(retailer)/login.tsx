@@ -1,44 +1,79 @@
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import {loginRetailer,forgotPassword} from '@/api/retailer/retailer';
-
+import { loginRetailer, forgotPassword } from '@/api/retailer/retailer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RetailerLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
- 
 
-  
   const logo = require('../../assets/logo.png');
 
+  // ✅ Clear AsyncStorage only ONCE when app starts
+  useEffect(() => {
+    const clearStorage = async () => {
+      try {
+        await AsyncStorage.clear();
+        console.log("✅ AsyncStorage cleared on app start!");
+      } catch (error) {
+        console.error("❌ Error clearing AsyncStorage:", error);
+      }
+    };
+    clearStorage();
+  }, []);
 
- 
+  // ✅ Handle Login
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
-
-    console.log("Sending login data:", { email, password });
-
-    const response = await loginRetailer(email, password);
-
-    if (response.success) {
-      Alert.alert("Success", "Login successful");
-      console.log(" Navigating to Dashboard...");
-      router.push("/(retailer)/dashboard");
-    } else {
-      console.error("Login Failed:", response.message);
-      Alert.alert("Error", response.message);
+  
+    console.log("📩 Sending login data:", { email, password });
+  
+    try {
+      const response: { success: boolean; retailer?: any; message?: string; token?: string } = await loginRetailer(email, password);
+      console.log("✅ Login response:", response);
+  
+      if (response?.success) {
+        Alert.alert("Success", "Login successful");
+        console.log("✅ Navigating to Dashboard...");
+  
+        // ✅ Store token in AsyncStorage
+        if (response.token) {
+          await AsyncStorage.setItem("token", response.token);
+          console.log("✅ Token stored in AsyncStorage.");
+        } else {
+          console.warn("⚠️ No token found in login response.");
+        }
+  
+        // ✅ Store retailer ID in AsyncStorage
+        const retailerId = response.retailer?.id;
+        if (retailerId !== undefined) {
+          await AsyncStorage.setItem("retailer_id", JSON.stringify(retailerId));
+          console.log("✅ Stored Retailer ID in AsyncStorage:", retailerId);
+        } else {
+          console.warn("⚠️ No retailer ID found in login response.");
+        }
+  
+        router.push("/(retailer)/dashboard");
+      } else {
+        console.error("❌ Login Failed:", response?.message || "Unknown error");
+        Alert.alert("Error", response?.message || "Login failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("❌ Login Error:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
-    return response;
   };
+  
 
-
+  // ✅ Handle Forgot Password
   const handleForgotPassword = async () => {
     if (!email) {
       Alert.alert("Enter Email", "Please enter your email to reset your password.");
@@ -51,14 +86,11 @@ export default function RetailerLogin() {
 
     if (response.success) {
       Alert.alert("Success", response.message);
-      // Navigate to the Reset Password screen and pass email as a parameter
       router.push(`/reset?email=${email}`);
     } else {
       Alert.alert("Error", response.message);
     }
   };
-
-
 
   return (
     <View style={styles.container}>
@@ -106,15 +138,11 @@ export default function RetailerLogin() {
 
         <TouchableOpacity 
           style={styles.loginButton}
-          onPress={async () => {
-            const response = await handleLogin();  // Call handleRegister function
-            if (response?.success) {
-              router.push('/(retailer)/dashboard');  // Navigate only if registration succeeds
-            }
-          }}
+          onPress={handleLogin} // ✅ Directly call handleLogin
         >
           <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
