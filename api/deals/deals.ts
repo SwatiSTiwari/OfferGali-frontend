@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.107:3000/api/deals"; // Change this to match your backend
+const API_URL = "http://192.168.0.106:3000/api/deals"; // Change this to match your backend
 
 /**
  * Add a new deal for a retailer

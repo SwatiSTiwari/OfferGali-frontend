@@ -23,7 +23,7 @@ export default function Login() {
       const response = await loginUser(email, password);
   
       if (response?.success) {
-        Alert.alert("Success", "Login successful");
+        Alert.alert("Success", "Login successfully");
         return { success: true };
       } else {
         console.log("Registration failed:", response?.message); // Log error details
@@ -78,7 +78,7 @@ export default function Login() {
           onPress={async () => {
             const response = await handleLogin(); 
             if (response?.success) {
-              router.push('/(app)/home');  // Navigate only if registration succeeds
+              router.push('/(auth)/dashboard');  // Navigate only if registration succeeds
             }
           }}
         >

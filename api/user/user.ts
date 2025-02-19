@@ -120,6 +120,26 @@ export const updateProfile = async (updatedData: any) => {
 
     return { success: true, data: response.data, message: "Profile updated successfully" };
   } catch (error: any) {
+    console.log(error)
+    return { success: false, message: error.response?.data?.message || "Failed to update profile" };
+  }
+};
+
+export const deleteProfile = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "No token found" };
+    }
+
+    const response = await axios.delete(`${API_URL}/deleteuser`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return { success: true, data: response.data, message: "Profile updated successfully" };
+  } catch (error: any) {
+    console.log(error)
     return { success: false, message: error.response?.data?.message || "Failed to update profile" };
   }
 };
