@@ -2,7 +2,7 @@ import axios from "axios";
 import * as Location from 'expo-location'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-const API_URL = "http://192.168.0.106:3000/api/users"; // Change this to your backend URL if deployed
+const API_URL = "http://192.168.0.101:3000/api/users"; // Change this to your backend URL if deployed
 
 export const registerUser= async (
   name: string,

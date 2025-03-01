@@ -3,43 +3,38 @@ import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 
 export default function OnboardingScreen() {
+  const logo = require('../assets/logo.png');
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>OfferGali</Text>
-      <Text style={styles.subtitle}>Discover Deals Near you</Text>
-
-      <Image
-        source={require('../assets/t.png')}
-        style={styles.image}
-        contentFit="contain"
-      />
-      <Text style={styles.text}>Personalize your deals</Text>
-
-      <Image
-        source={require('../assets/w.png')}
-        style={styles.image}
-        contentFit="contain"
-      />
-      <Text style={styles.text}>Find nearby offers</Text>
-
-      <Image
-        source={require('../assets/s.png')}
-        style={styles.image}
-        contentFit="contain"
-      />
-      <Text style={styles.text}>Save and enjoy!</Text>
-
-      <View style={styles.buttonContainer}>
-        <Link href="/(auth)/register" asChild>
-          <Text style={styles.button}>Get Started as customer </Text>
-        </Link>
+      <View style={styles.headerContainer}>
+        <View style={styles.logoContainer}>
+          <Image source={logo} style={styles.logo} />
+          <Text style={styles.logoText}>
+            <Text style={styles.orangeText}>fferGali</Text>
+          </Text>
+        </View>
+        <Text style={styles.subtitle}>Discover Deals Near You</Text>
       </View>
 
+      <View style={styles.imageContainer}>
+        <Image
+          source={require('../assets/s.png')} // Replace with your shopping/deals illustration
+          style={styles.mainImage}
+          contentFit="contain"
+        />
+      </View>
+
+      {/* Buttons Side by Side */}
       <View style={styles.buttonContainer}>
-        <Link href="/(retailer)/register" asChild>
-          <Text style={styles.button}>Get Started as retailer</Text>
+        <Link href="/(auth)/register" asChild>
+          <Text style={styles.button}>Get Started as Customer</Text>
         </Link>
-        </View>
+
+        <Link href="/(retailer)/register" asChild>
+          <Text style={styles.button}>Get Started as Retailer</Text>
+        </Link>
+      </View>
     </View>
   );
 }
@@ -49,38 +44,61 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     padding: 16,
-    justifyContent: 'space-between', // Ensures even spacing with button visible
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
+  headerContainer: {
+    alignItems: 'center',
+    marginTop: 60,
+  },
+  logoContainer: {
+    flexDirection: 'row', // Align logo and text horizontally
+    alignItems: 'center',
+  },
+  logo: {
+    width: 75,
+    height: 50,
+  },
+  logoText: {
+    fontSize: 32,
     fontWeight: 'bold',
+    color: 'black',
+    marginLeft: -2, // Adjusts text closer to logo
+  },
+  orangeText: {
+    color: '#FF6F61',
   },
   subtitle: {
     fontSize: 16,
-    color: 'gray',
-    textAlign: 'center',
+    color: '#333',
+    fontWeight: 'bold',
+    marginTop: 8,
   },
-  image: {
-    width: 100,
-    height: 100,
-  },
-  text: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    width: '100%',
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
+  mainImage: {
+    width: 250,
+    height: 250,
+  },
+  buttonContainer: {
+    flexDirection: 'row', // Places buttons side by side
+    justifyContent: 'space-evenly', // Distributes them evenly
+    width: '100%', // Ensures full width
+    gap: 6, // Adds space between buttons
+    marginBottom: 40
+  },
   button: {
-    backgroundColor: '#FF6F61', // Fixed missing hash for color
+    backgroundColor: '#FF6F61',
     color: 'white',
     fontWeight: 'bold',
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     fontSize: 16,
     borderRadius: 25,
     textAlign: 'center',
+    width: 180, // Adjusted for better spacing
   },
 });
