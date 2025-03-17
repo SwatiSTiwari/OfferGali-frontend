@@ -14,83 +14,71 @@ export default function RetailerLogin() {
 
   const logo = require('../../assets/logo.png');
 
-  // ✅ Clear AsyncStorage only ONCE when app starts
+  // Clear AsyncStorage only ONCE when app starts
   useEffect(() => {
     const clearStorage = async () => {
       try {
         await AsyncStorage.clear();
-        console.log("✅ AsyncStorage cleared on app start!");
+        console.log(" AsyncStorage cleared on app start!");
       } catch (error) {
-        console.error("❌ Error clearing AsyncStorage:", error);
+        console.error(" Error clearing AsyncStorage:", error);
       }
     };
     clearStorage();
   }, []);
 
-  // ✅ Handle Login
+  //  Handle Login
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
   
-    console.log("📩 Sending login data:", { email, password });
+    console.log("Sending login data:", { email, password });
   
     try {
       const response: { success: boolean; retailer?: any; message?: string; token?: string } = await loginRetailer(email, password);
-      console.log("✅ Login response:", response);
+      console.log(" Login response:", response);
   
       if (response?.success) {
         Alert.alert("Success", "Login successful");
-        console.log("✅ Navigating to Dashboard...");
+        console.log(" Navigating to Dashboard...");
   
-        // ✅ Store token in AsyncStorage
+        //  Store token in AsyncStorage
         if (response.token) {
           await AsyncStorage.setItem("token", response.token);
-          console.log("✅ Token stored in AsyncStorage.");
+          console.log(" Token stored in AsyncStorage.");
         } else {
-          console.warn("⚠️ No token found in login response.");
+          console.warn(" No token found in login response.");
         }
   
-        // ✅ Store retailer ID in AsyncStorage
+        //  Store retailer ID in AsyncStorage
         const retailerId = response.retailer?.id;
         if (retailerId !== undefined) {
           await AsyncStorage.setItem("retailer_id", JSON.stringify(retailerId));
-          console.log("✅ Stored Retailer ID in AsyncStorage:", retailerId);
+          console.log(" Stored Retailer ID in AsyncStorage:", retailerId);
         } else {
-          console.warn("⚠️ No retailer ID found in login response.");
+          console.warn(" No retailer ID found in login response.");
         }
   
         router.push("/(retailer)/dashboard");
       } else {
-        console.error("❌ Login Failed:", response?.message || "Unknown error");
+        console.error(" Login Failed:", response?.message || "Unknown error");
         Alert.alert("Error", response?.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      console.error("❌ Login Error:", error);
+      console.error(" Login Error:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
   
 
-  // ✅ Handle Forgot Password
-  const handleForgotPassword = async () => {
-    if (!email) {
-      Alert.alert("Enter Email", "Please enter your email to reset your password.");
-      return;
-    }
-
-    setLoading(true);
-    const response = await forgotPassword(email);
-    setLoading(false);
-
-    if (response.success) {
-      Alert.alert("Success", response.message);
-      router.push(`/reset?email=${email}`);
-    } else {
-      Alert.alert("Error", response.message);
-    }
+  //  Handle Forgot Password
+  const handleForgotPassword = () => {
+    console.log(" Redirecting to Forgot Password Page...");
+    router.push("/forgetpass");  // Redirects to forgot password page
   };
+  
 
   return (
     <View style={styles.container}>

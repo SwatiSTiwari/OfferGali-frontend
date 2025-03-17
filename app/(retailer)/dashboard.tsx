@@ -41,7 +41,6 @@ export default function RetailerDashboard() {
     fetchRetailerId();
   }, []);
 
-
   useEffect(() => {
     if (retailerId === null) {
       console.log("Retailer ID not available yet, skipping fetchDeals");
@@ -75,9 +74,6 @@ export default function RetailerDashboard() {
   
     fetchDeals();
   }, [retailerId]);
-  
-
-  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -101,10 +97,6 @@ export default function RetailerDashboard() {
               <TouchableOpacity style={styles.addButton} onPress={() => router.push("/(retailer)/deals/new")}>
                 <Text style={styles.addButtonText}>+ Add Deal</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.editButton} onPress={() => router.push("/(retailer)/deals/edit")}>
-                <Ionicons name="create-outline" size={18} color="#333" />
-                <Text style={styles.editButtonText}>Edit Deal</Text>
-              </TouchableOpacity>
             </View>
 
             <Text style={styles.sectionTitle}>Active Deals</Text>
@@ -123,6 +115,13 @@ export default function RetailerDashboard() {
                     <Text style={styles.dealInfo}>Redeemed: {deal.engagements}</Text>
                   </View>
                   <Text style={styles.dealExpiry}>Expires: {deal.expiration_date}</Text>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => router.push({ pathname: "/(retailer)/deals/edit", params: { id: deal.id.toString() } })}
+                  >
+                    <Ionicons name="create-outline" size={18} color="#333" />
+                    <Text style={styles.editButtonText}>Edit Deal</Text>
+                  </TouchableOpacity>
                 </View>
               ))
             ) : (
@@ -163,7 +162,7 @@ export default function RetailerDashboard() {
         </Link>
       </View>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
   actionButtons: { flexDirection: "row", padding: 16, gap: 12 },
   addButton: { flex: 1, backgroundColor: "#FF6B6B", padding: 12, borderRadius: 8, alignItems: "center" },
   addButtonText: { color: "#fff", fontWeight: "600" },
-  editButton: { flex: 1, flexDirection: "row", backgroundColor: "#fff", padding: 12, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e0e0e0", gap: 8 },
+  editButton: { flexDirection: "row", backgroundColor: "#fff", padding: 12, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e0e0e0", gap: 8, marginTop: 10 },
   editButtonText: { color: "#333", fontWeight: "600" },
   sectionTitle: { fontSize: 18, fontWeight: "600", padding: 16, paddingBottom: 8 },
   dealCard: { backgroundColor: "#fff", marginHorizontal: 16, marginBottom: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: "#e0e0e0" },
@@ -190,6 +189,4 @@ const styles = StyleSheet.create({
   bottomNav: { flexDirection: "row", justifyContent: "space-around", paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#F0F0F0", backgroundColor: "#fff", position: "absolute", bottom: 0, left: 0, right: 0 },
   navItem: { padding: 4 },
   navText: { fontSize: 12, marginTop: 4, color: "#666" },
-})
-
-
+});
