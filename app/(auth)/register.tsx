@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ScrollView, View, Image, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { registerUser } from '@/api/user/user';
+import { useAuthRequest, } from 'expo-auth-session/build/providers/Google';
+import Expo from "expo"
+
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 
 export default function RegisterUser() {
   const[register, setRegister] = useState({
@@ -21,10 +26,40 @@ export default function RegisterUser() {
 
   const logo = require('../../assets/logo.png');
 
-  const googleClick = (e:any)=>{
-      
+  const [userInfo, setUserInfo]  = useState('')
+
+  const [request, response, promptAsync] = useAuthRequest({
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID
+  })
+
+  useEffect(()=>{
+    handleSingInWithGoogle()
+  }, [response])
+
+  const handleSingInWithGoogle = async ()=>{
+    console.log("In handleSingInWithGoogle")
+    console.log(response)
+    if(response?.type === "success"){
+      console.log("suceess")
+      await getUserInfo(response.authentication?.accessToken)
+    }
   }
 
+  const getUserInfo = async (token:any)=>{
+    try{
+      const response = await fetch("https://www.googleapis.com/userinfo/v2/me", {
+        headers: {Authorization: `Bearer ${token}`}
+      })
+  
+      const user = await response.json();
+      console.log(user)
+      setUserInfo(user)
+    }catch(e){
+      console.log(e)
+    }
+    
+  }
 
     const handleRegister = async () => {
       if (!register.name || !register.email || !register.phone_number || !register.password) {
@@ -138,7 +173,7 @@ export default function RegisterUser() {
 
         <View style={styles.socialButtons}>
           <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome name="google" size={24} color="#1877F2" onAccessibilityAction={googleClick}/>
+            <FontAwesome name="google" size={24} color="#1877F2" onAccessibilityAction={handleSingInWithGoogle}/>
           </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="apple" size={24} color="#000" />

@@ -9,9 +9,18 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["com.googleusercontent.apps.902759843990-gutfi0oki86mjmv5pt33kqdej61p1f2s"]
+          }
+        ]
+      },
+      "supportsTablet": true,
+      "bundleIdentifier": "com.offergali.frontend"
     },
     "android": {
+      "package": "com.offergali.frontend",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -23,6 +32,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.902759843990-gutfi0oki86mjmv5pt33kqdej61p1f2s"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -36,6 +51,21 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "84900348-0074-43ee-90ef-d121367b72d9"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/84900348-0074-43ee-90ef-d121367b72d9"
+    },
+    "owner": "offergali"
   }
 }
