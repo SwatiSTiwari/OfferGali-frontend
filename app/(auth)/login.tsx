@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } fro
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { loginUser } from '@/api/user/user';
+import { forgotPassword } from '@/api/user/user';
 
 
 
@@ -10,6 +11,8 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
 
   const logo = require('../../assets/logo.png'); 
   
@@ -36,6 +39,25 @@ export default function Login() {
       return { success: false };
     }
   };
+
+   const handleForgotPassword = async () => {
+      if (!email) {
+        Alert.alert("Enter Email", "Please enter your email to reset your password.");
+        return;
+      }
+  
+      setLoading(true);
+      const response = await forgotPassword(email);
+      setLoading(false);
+  
+      if (response.success) {
+        Alert.alert("Success, Check your mail to get reset password link", response.message);
+        // Navigate to the Reset Password screen and pass email as a parameter
+        router.push(`/reset?email=${email}`);
+      } else {
+        Alert.alert("Error", response.message);
+      }
+    };
 
   return (
     <View style={styles.container}>
@@ -85,6 +107,9 @@ export default function Login() {
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
         <Text style={styles.orText}>or</Text>
 
         <View style={styles.socialButtons}>
@@ -95,11 +120,6 @@ export default function Login() {
             <FontAwesome name="facebook" size={20} color="#4267B2" />
           </TouchableOpacity>
           
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
-          <Link href="/(auth)/register" style={styles.link}>Sign up</Link>
         </View>
       </View>
     </View>
@@ -187,6 +207,14 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  forgotPasswordText: {
+    color: '#666',
+    fontSize: 14,
   },
   footer: {
     flexDirection: 'row',

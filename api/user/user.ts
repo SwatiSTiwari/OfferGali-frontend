@@ -71,6 +71,7 @@ export const forgotPassword = async (email: string) => {
     const response = await axios.post(`${API_URL}/sendpasswordmail`, { email });
     return { success: true, message: response.data.message || "Check your email for reset link" };
   } catch (error: any) {
+    console.log(error)
     return { success: false, message: error.response?.data?.message || "Failed to send reset email" };
   }
 };
