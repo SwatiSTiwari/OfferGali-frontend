@@ -1,21 +1,66 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import { loginUser } from '@/api/user/user';
+import { loginUser, loginUserFromGoogle } from '@/api/user/user';
 import { forgotPassword } from '@/api/user/user';
+import * as Google from "expo-auth-session/providers/google";
 
-
+interface GoogleUser {
+  email: string;
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    scopes: [
+      "email", 
+    ],
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      getUserInfo(response.authentication?.accessToken);
+    }
+  }, [response]);
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  const logo = require('../../assets/logo.png');
 
-  const logo = require('../../assets/logo.png'); 
-  
+  const getUserInfo = async (token: string | undefined) => {
+    if (!token) return;
+    try {
+      const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const user: GoogleUser = await res.json();
+      console.log(user)
+      await handleLoginGoogle(user);
+    } catch (error) {
+      console.error("Google User Info Fetch Error:", error);
+    }
+  };
+   const handleLoginGoogle = async (user: GoogleUser) => {
+      try {
+        const response = await loginUserFromGoogle(user.email);
+        if (response?.success) {
+          Alert.alert("Success", "Login successfully");
+          router.push("/(auth)/dashboard");
+        } else {
+          console.log("Registration failed:", response?.message);
+          Alert.alert("Error", response?.message);
+          router.push(response?.message === "User already Exist! Please Login" ? "/(auth)/login" : "/(auth)/register");
+        }
+      } catch (error) {
+        console.error("Unexpected error during registration:", error);
+        Alert.alert("Error", "Something went wrong. Please try again.");
+      }
+  };
+
   const handleLogin = async () => {
     if (!email  || !password) {
       Alert.alert("Error", "Please fill all fields");
@@ -29,7 +74,7 @@ export default function Login() {
         Alert.alert("Success", "Login successfully");
         return { success: true };
       } else {
-        console.log("Registration failed:", response?.message); // Log error details
+        console.log("Login failed:", response?.message); // Log error details
         Alert.alert("Error", response?.message);
         return { success: false };
       }
@@ -113,7 +158,7 @@ export default function Login() {
         <Text style={styles.orText}>or</Text>
 
         <View style={styles.socialButtons}>
-          <TouchableOpacity style={styles.socialButton}>
+          <TouchableOpacity style={styles.socialButton} onPress={() => promptAsync()}>
             <FontAwesome name="google" size={20} color="#DB4437" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton}>

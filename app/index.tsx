@@ -1,6 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
+import * as WebBrowser from "expo-web-browser"
+
+WebBrowser.maybeCompleteAuthSession()
 
 export default function OnboardingScreen() {
   const logo = require('../assets/logo.png');
@@ -11,7 +14,7 @@ export default function OnboardingScreen() {
         <View style={styles.logoContainer}>
           <Image source={logo} style={styles.logo} />
           <Text style={styles.logoText}>
-            <Text style={styles.orangeText}>fferGali</Text>
+            <Text style={styles.orangeText}>OfferGali</Text>
           </Text>
         </View>
         <Text style={styles.subtitle}>Discover Deals Near You</Text>

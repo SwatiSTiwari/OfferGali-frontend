@@ -2,7 +2,7 @@ import axios from "axios";
 import * as Location from 'expo-location'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-const API_URL = "http://192.168.0.101:3000/api/users"; // Change this to your backend URL if deployed
+const API_URL = "http://127.0.0.1:3000/api/users"; // Change this to your backend URL if deployed
 
 export const registerUser= async (
   name: string,
@@ -54,14 +54,76 @@ export const loginUser = async (email: string, password: string) => {
 
     console.log("Login response:", response.data);
 
-    const { token, retailer } = response.data;
+    const { token, user } = response.data;
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("userId", user.id.toString());
 
-    return { success: true, retailer };
+    return { success: true, user };
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || "Login failed" };
+  }
+};
+
+export const registerUserFromGoogle= async (
+  name: string,
+  email: string,
+  phone_number: string,
+  profile: string
+) => {
+  try {
+    const {status} = await Location.requestForegroundPermissionsAsync();
+
+    if(status !== 'granted'){
+      Alert.alert("Permission Denied", "location permission is required");
+      return;
+    }
+
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Highest,
+    })
+
+    let latitude = location.coords.latitude
+    let longitude = location.coords.longitude
+
+    const response = await axios.post(`${API_URL}/register/google`, {
+        name,
+        phone_number,
+        email,
+        profile,
+        latitude: latitude, 
+        longitude: longitude,
+      });
+    const { token, user} = response.data;
+
+    // Store token for authentication
+    await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("userId", user.id.toString());
+
+    return { success: true, user };
+  } catch (error: any) {
+    console.log(error)
+    return { success: false, message: error.response?.data?.message || "Registration failed" };
+  }
+};
+
+export const loginUserFromGoogle= async (
+  email: string,
+) => {
+  try {
+    const response = await axios.post(`${API_URL}/login/google`, {
+        email,
+      });
+    const { token, user} = response.data;
+    // Store token for authentication
+    await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("userId", user.id.toString());
+
+    return { success: true, user };
+  } catch (error: any) {
+    console.log(error)
+    return { success: false, message: error.response?.data?.message || "Registration failed" };
   }
 };
 
