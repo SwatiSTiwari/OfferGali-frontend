@@ -2,18 +2,18 @@ import axios from "axios";
 import * as Location from 'expo-location'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-const API_URL = "http://192.168.0.106:3000/api/users"; // Change this to your backend URL if deployed
+const API_URL = "https://spx239g8-4001.inc1.devtunnels.ms"; // Change this to your backend URL if deployed
 
-export const registerUser= async (
+export const registerUser = async (
   name: string,
   email: string,
   password: string,
   phone_number: string,
 ) => {
   try {
-    const {status} = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
 
-    if(status !== 'granted'){
+    if (status !== 'granted') {
       Alert.alert("Permission Denied", "location permission ia required");
       return;
     }
@@ -25,14 +25,14 @@ export const registerUser= async (
     let latitude = location.coords.latitude
     let longitude = location.coords.longitude
 
-    const response = await axios.post(`${API_URL}/register`, {
-        name,
-        phone_number,
-        email,
-        password,
-        latitude: latitude, 
-        longitude: longitude,
-      });
+    const response = await axios.post(`${API_URL}/api/users/register`, {
+      name,
+      phone_number,
+      email,
+      password,
+      latitude: latitude,
+      longitude: longitude,
+    });
     const { token, user } = response.data;
 
     // Store token for authentication
@@ -47,7 +47,7 @@ export const registerUser= async (
 
 export const loginUser = async (email: string, password: string) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, {
+    const response = await axios.post(`${API_URL}/api/users/login`, {
       email,
       password,
     });
@@ -68,7 +68,7 @@ export const loginUser = async (email: string, password: string) => {
 // Forgot Password
 export const forgotPassword = async (email: string) => {
   try {
-    const response = await axios.post(`${API_URL}/sendpasswordmail`, { email });
+    const response = await axios.post(`${API_URL}/api/users/sendpasswordmail`, { email });
     return { success: true, message: response.data.message || "Check your email for reset link" };
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || "Failed to send reset email" };
@@ -78,7 +78,7 @@ export const forgotPassword = async (email: string) => {
 // Reset Password
 export const resetPassword = async (token: string, newPassword: string) => {
   try {
-    const response = await axios.post(`${API_URL}/setpassword`, { token, newPassword });
+    const response = await axios.post(`${API_URL}/api/users/setpassword`, { token, newPassword });
     return { success: true, message: response.data.message || "Password reset successfully" };
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || "Failed to reset password" };
@@ -95,7 +95,7 @@ export const getProfile = async () => {
       return { success: false, message: "No token found" };
     }
 
-    const response = await axios.get(`${API_URL}/profile`, {
+    const response = await axios.get(`${API_URL}/api/users/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -114,7 +114,7 @@ export const updateProfile = async (updatedData: any) => {
       return { success: false, message: "No token found" };
     }
 
-    const response = await axios.put(`${API_URL}/profileupdate`, updatedData, {
+    const response = await axios.put(`${API_URL}/api/users/profileupdate`, updatedData, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -133,7 +133,7 @@ export const deleteProfile = async () => {
       return { success: false, message: "No token found" };
     }
 
-    const response = await axios.delete(`${API_URL}/deleteuser`, {
+    const response = await axios.delete(`${API_URL}/api/users/deleteuser`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -143,3 +143,46 @@ export const deleteProfile = async () => {
     return { success: false, message: error.response?.data?.message || "Failed to update profile" };
   }
 };
+
+
+export const fetchNotifications = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "No token found" };
+    }
+
+    const response = await axios.get(`${API_URL}/api/notifications`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return { success: true, data: response.data, message: "Notifications fetched successfully" };
+  } catch (error: any) {
+    console.log("Error fetching notifications:", error);
+    return { success: false, message: error.response?.data?.message || "Failed to fetch notifications" };
+  }
+};
+
+// Function to mark a notification as read
+export const markNotificationAsRead = async (notificationId: string) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "No token found" };
+    }
+    
+    const response = await axios.patch(
+      `${API_URL}/api/notifications/${notificationId}/read`,
+      { notification_id: notificationId },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    return { success: true, data: response.data, message: "Notification marked as read" };
+  } catch (error: any) {
+    console.log("Error marking notification as read:", error);
+    return { success: false, message: error.response?.data?.message || "Failed to mark notification as read" };
+  }
+};
+
