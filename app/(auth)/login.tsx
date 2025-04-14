@@ -21,7 +21,15 @@ export default function Login() {
   
     try {
       const response = await loginUser(email, password);
-  
+      console.log("Login response2:", response); // Log the response for debugging
+      
+      if (response?.success) {
+        if (response?.user?.preferences?.interests === null) {
+          router.push("/(auth)/profile-setup");
+        } else {
+          router.push("/dashboard");
+        }
+      }
       if (response?.success) {
         Alert.alert("Success", "Login successfully");
         return { success: true };
@@ -75,12 +83,7 @@ export default function Login() {
 
         <TouchableOpacity 
           style={styles.button}
-          onPress={async () => {
-            const response = await handleLogin(); 
-            if (response?.success) {
-              router.push('/(auth)/dashboard');  // Navigate only if registration succeeds
-            }
-          }}
+          onPress={handleLogin}
         >
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>

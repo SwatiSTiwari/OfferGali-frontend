@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Checkbox } from 'expo-checkbox';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateProfile } from '@/api/user/user';
 
 const interests = [
   'Clothing',
@@ -31,6 +33,36 @@ export default function ProfileSetup() {
     );
   };
 
+  const savePreferences = async () => {
+    try {
+      // Get user token from AsyncStorage
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.log('No token found');
+        return;
+      }
+
+      // Prepare the updated preferences object
+      const updatedData = {
+        preferences: {
+          interests: selectedInterests,
+          notifications: notifications,
+        },
+      };
+
+      // Call the updateProfile function to update the user profile
+      const response = await updateProfile(updatedData);
+
+      if (response.success) {
+        router.push('/home');  // Navigate to home or any other screen on success
+      } else {
+        console.log('Error updating preferences:', response.message);
+      }
+    } catch (error) {
+      console.log('Error saving preferences:', error);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Profile Setup</Text>
@@ -57,8 +89,7 @@ export default function ProfileSetup() {
         <Text style={styles.sectionTitle}>Notification Preferences</Text>
         <TouchableOpacity
           style={styles.checkboxContainer}
-          onPress={() => setNotifications(prev => ({ ...prev, push: !prev.push }))}
-        >
+          onPress={() => setNotifications(prev => ({ ...prev, push: !prev.push }))}>
           <Checkbox
             value={notifications.push}
             onValueChange={(value) => setNotifications(prev => ({ ...prev, push: value }))}
@@ -69,8 +100,7 @@ export default function ProfileSetup() {
 
         <TouchableOpacity
           style={styles.checkboxContainer}
-          onPress={() => setNotifications(prev => ({ ...prev, email: !prev.email }))}
-        >
+          onPress={() => setNotifications(prev => ({ ...prev, email: !prev.email }))}>
           <Checkbox
             value={notifications.email}
             onValueChange={(value) => setNotifications(prev => ({ ...prev, email: value }))}
@@ -81,8 +111,7 @@ export default function ProfileSetup() {
 
         <TouchableOpacity
           style={styles.checkboxContainer}
-          onPress={() => setNotifications(prev => ({ ...prev, sms: !prev.sms }))}
-        >
+          onPress={() => setNotifications(prev => ({ ...prev, sms: !prev.sms }))}>
           <Checkbox
             value={notifications.sms}
             onValueChange={(value) => setNotifications(prev => ({ ...prev, sms: value }))}
@@ -94,13 +123,13 @@ export default function ProfileSetup() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/home')}
-      >
+        onPress={savePreferences}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
