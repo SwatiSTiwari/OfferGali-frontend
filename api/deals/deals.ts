@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "https://spx239g8-4001.inc1.devtunnels.ms/api/deals"; 
+const API_URL = "http://192.168.0.104:3000/api/deals"; 
 
 /**
  * Add a new deal for a retailer
@@ -34,6 +34,38 @@ export const addDeal = async (deal: {
     return { success: false, message: error.response?.data?.error || "Failed to add deal" };
   }
 };
+
+
+export const editDeal = async (
+  dealId: string, // Add dealId as a parameter
+  deal: {
+    title: string;
+    description: string;
+    images: string[];
+    category: string;
+    expiration_date: string;
+    redemption_instructions: string;
+    engagements: number;
+    views: number;
+  }
+) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "Unauthorized. No token found" };
+    }
+
+    const response = await axios.put(`${API_URL}/edit/${dealId}`, deal, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return { success: true, deal: response.data };
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.error || "Failed to edit deal" };
+  }
+};
+
 
 /**
  * Fetch all deals for a retailer
