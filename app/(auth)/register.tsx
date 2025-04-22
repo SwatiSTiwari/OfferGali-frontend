@@ -64,7 +64,7 @@ export default function RegisterUser() {
       const response = await registerUserFromGoogle(user.name, user.email, user.phone_number || "", user.picture);
       if (response?.success) {
         Alert.alert("Success", "Registered successfully");
-        router.push("/(auth)/dashboard");
+        router.push("/(app)/home");
       } else {
         console.log("Registration failed:", response?.message);
         Alert.alert("Error", response?.message);

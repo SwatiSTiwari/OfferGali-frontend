@@ -1,4 +1,4 @@
-import { Redirect, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
@@ -6,8 +6,8 @@ import { StyleSheet } from 'react-native';
 export default function AuthLayout() {
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
-        <StatusBar style="dark" />
         <Stack.Screen 
           name="login" 
           options={{ 

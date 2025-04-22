@@ -2,7 +2,7 @@ import axios from "axios";
 import * as Location from 'expo-location'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-const API_URL = "http://192.168.0.104:3000/api/users"; // Change this to your backend URL if deployed
+const API_URL = "http://192.168.0.103:3000/api/users"; // Change this to your backend URL if deployed
 
 export const registerUser = async (
   name: string,
@@ -25,7 +25,7 @@ export const registerUser = async (
     let latitude = location.coords.latitude
     let longitude = location.coords.longitude
 
-    const response = await axios.post(`${API_URL}/api/users/register`, {
+    const response = await axios.post(`${API_URL}/register`, {
       name,
       phone_number,
       email,
@@ -47,7 +47,7 @@ export const registerUser = async (
 
 export const loginUser = async (email: string, password: string) => {
   try {
-    const response = await axios.post(`${API_URL}/api/users/login`, {
+    const response = await axios.post(`${API_URL}/login`, {
       email,
       password,
     });
