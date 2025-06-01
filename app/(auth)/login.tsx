@@ -69,9 +69,9 @@ export default function Login() {
   
     try {
       const response = await loginUser(email, password);
-  
       if (response?.success) {
         Alert.alert("Success", "Login successfully");
+        console.log("Login successful: User->", email);
         return { success: true };
       } else {
         console.log("Login failed:", response?.message); // Log error details
