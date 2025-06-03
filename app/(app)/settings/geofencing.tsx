@@ -10,7 +10,12 @@ export default function GeofencingSetup() {
   const router = useRouter();
   const [isEnabled, setIsEnabled] = useState(false);
   const [radius, setRadius] = useState(2.8); // miles
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState<{
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+} | null>(null);
 
   useEffect(() => {
     (async () => {
