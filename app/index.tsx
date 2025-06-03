@@ -1,12 +1,31 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from "expo-web-browser"
+import { useEffect } from 'react';
+import axios from 'axios';
 
 WebBrowser.maybeCompleteAuthSession()
 
 export default function OnboardingScreen() {
   const logo = require('../assets/logo.png');
+
+  useEffect(() => {
+    const checkBackendConnection = async () => {
+      try {
+        const response = await axios.get('http://192.168.0.107:3000/');
+        if (response.status === 200 && response.data?.message) {
+          console.log('Backend Connected', response.data.message);
+        } else {
+          console.log('Backend Error', 'Unexpected response from backend.');
+          console.log('Possibility->', 'The IP of your device is incorrect please check it and update');
+        }
+      } catch (error: any) {
+        Alert.alert('Backend Not Reachable', error.message || 'Could not connect to backend.');
+      }
+    };
+    checkBackendConnection();
+  }, []);
 
   return (
     <View style={styles.container}>

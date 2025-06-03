@@ -69,17 +69,9 @@ export default function Login() {
   
     try {
       const response = await loginUser(email, password);
-      console.log("Login response2:", response); // Log the response for debugging
-      
-      if (response?.success) {
-        if (response?.user?.preferences?.interests === null) {
-          router.push("/(auth)/profile-setup");
-        } else {
-          router.push("/dashboard");
-        }
-      }
       if (response?.success) {
         Alert.alert("Success", "Login successfully");
+        console.log("Login successful: User->", email);
         return { success: true };
       } else {
         console.log("Login failed:", response?.message); // Log error details

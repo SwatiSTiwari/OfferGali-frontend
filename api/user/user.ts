@@ -54,13 +54,13 @@ export const loginUser = async (email: string, password: string) => {
 
     console.log("Login response:", response.data);
 
-    const { token, retailer } = response.data;
+    const { token, user } = response.data;
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
     await AsyncStorage.setItem("userId", user.id.toString());
 
-    return { success: true, retailer };
+    return { success: true, user };
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || "Login failed" };
   }
