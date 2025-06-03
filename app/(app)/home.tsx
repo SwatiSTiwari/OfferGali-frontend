@@ -235,42 +235,18 @@
 //     color: '#FF4B55',
 //   },
 // });
-
-
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import { fetchNearbyDeals, LocationDeal, calculateDistance } from '@/api/user/user';
 
 const categories = [
   { id: 1, name: 'All Deals', icon: 'tags' },
   { id: 2, name: 'Food', icon: 'cutlery' },
   { id: 3, name: 'Shopping', icon: 'shopping-bag' },
   { id: 4, name: 'Entertainment', icon: 'film' },
-];
-
-const spaDeals = [
-  {
-    id: 1,
-    title: 'Spa Day Package',
-    views: '0.8 miles',
-    endsToday: true,
-    image: require('../../assets/spa.png'),
-  },
-  {
-    id: 2,
-    title: 'Spa Day Package',
-    views: '0.8 miles',
-    endsToday: true,
-    image: require('../../assets/spa.png'),
-  },
-  {
-    id: 3,
-    title: 'Spa Day Package',
-    views: '0.8 miles',
-    endsToday: true,
-    image: require('../../assets/spa.png'),
-  },
 ];
 
 const shopCategories = [
@@ -291,8 +267,97 @@ const shopCategories = [
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Deals');
+  const [nearbyDeals, setNearbyDeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const logo = require('../../assets/logo.png');
+
+  useEffect(() => {
+    (async () => {
+      // Get user's location
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location.coords);
+
+      // Fetch nearby deals
+      const result = await fetchNearbyDeals();
+      if (result.success) {
+        // Process the deals to add distance information
+        const dealsWithDistance = result.data.map(deal => {
+          // Parse location from the PostGIS format
+          const retailerLoc = parsePostGISLocation(deal.retailer_location);
+          
+          // Calculate distance from user
+          let distance = '?';
+          if (userLocation) {
+            const distanceInMiles = calculateDistance(
+              userLocation.latitude, 
+              userLocation.longitude,
+              retailerLoc.lat, 
+              retailerLoc.lng
+            );
+            distance = `${distanceInMiles.toFixed(1)} miles`;
+          }
+          
+          return {
+            ...deal,
+            distance,
+            endsToday: isEndingToday(deal.expires_at)
+          };
+        });
+        
+        setNearbyDeals(dealsWithDistance);
+      } else {
+        setErrorMsg(result.message);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  // Helper function to parse PostGIS location string
+  const parsePostGISLocation = (locationString) => {
+    try {
+      // Simplified parsing - in a real app, use a proper GIS library
+      const pattern = /POINT\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/i;
+      const match = locationString.match(pattern);
+      if (match) {
+        return { lng: parseFloat(match[1]), lat: parseFloat(match[2]) };
+      }
+      // Fallback parsing for the binary format
+      return { lat: 37.7749, lng: -122.4194 }; // Default to San Francisco if parsing fails
+    } catch (error) {
+      console.error("Error parsing location:", error);
+      return { lat: 37.7749, lng: -122.4194 };
+    }
+  };
+
+  // Check if deal is ending today
+  const isEndingToday = (expiresAt) => {
+    if (!expiresAt) return false;
+    
+    const today = new Date();
+    const expiryDate = new Date(expiresAt);
+    
+    return (
+      today.getDate() === expiryDate.getDate() &&
+      today.getMonth() === expiryDate.getMonth() &&
+      today.getFullYear() === expiryDate.getFullYear()
+    );
+  };
+
+  // Calculate discount percentage
+  const calculateDiscount = (originalPrice, currentPrice) => {
+    if (!originalPrice || !currentPrice || originalPrice <= currentPrice) return null;
+    const discount = ((originalPrice - currentPrice) / originalPrice) * 100;
+    return `${Math.round(discount)}% Off`;
+  };
 
   return (
     <View style={styles.container}>
@@ -301,12 +366,11 @@ export default function Home() {
           <Image source={logo} style={styles.logo} />
           <Text style={styles.headerTitle}>Nearby Deals</Text>
         </View>
-         <Link href="/(app)/notifications" asChild>
-                  <TouchableOpacity style={styles.navItem}>
-                    <FontAwesome name="bell" size={24} color="#666" />
-                    <Text style={styles.navText}>Home</Text>
-                  </TouchableOpacity>
-                </Link>
+        <Link href="/(app)/notifications" asChild>
+          <TouchableOpacity style={styles.navItem}>
+            <FontAwesome name="bell" size={24} color="#666" />
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -362,44 +426,73 @@ export default function Home() {
           />
         </View>
 
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.spaDealsScroll}
-          contentContainerStyle={styles.spaDealsContainer}
-        >
-          {spaDeals.map((deal) => (
-            <Link href={`/deals/${deal.id}`} key={deal.id} asChild>
-  <View key={deal.id} style={styles.spaDealCard}>
-    <TouchableOpacity style={styles.heartButton}>
-      <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
-    </TouchableOpacity>
-    <Image source={deal.image} style={styles.spaDealImage} />
-    <View style={styles.spaDealOverlay}>
-      <Text style={styles.spaDealDiscount}>50% Off</Text>
-    </View>
-    <View style={styles.spaDealInfo}>
-      {/* Add distance and deal end info before the title */}
-      <View style={styles.spaDealMeta}>
-        <View style={styles.spaDealMetaItem}>
-          <FontAwesome name="map-marker" size={12} color="#666" />
-          <Text style={styles.spaDealMetaText}>{deal.views}</Text>
+        {/* Nearby Deals Section */}
+        <View style={styles.nearbyDealsSection}>
+          <Text style={styles.sectionTitle}>Nearby Deals</Text>
+          <Text style={styles.sectionSubtitle}>Special offers close to you</Text>
+          
+          {loading ? (
+            <ActivityIndicator size="large" color="#FF6B6B" style={styles.loader} />
+          ) : errorMsg ? (
+            <Text style={styles.errorText}>{errorMsg}</Text>
+          ) : (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.spaDealsScroll}
+              contentContainerStyle={styles.spaDealsContainer}
+            >
+              {nearbyDeals.length > 0 ? (
+                nearbyDeals.map((deal) => (
+                  <Link href={`/deals/${deal.deal_id}`} key={deal.deal_id} asChild>
+                    <TouchableOpacity style={styles.spaDealCard}>
+                      <TouchableOpacity style={styles.heartButton}>
+                        <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
+                      </TouchableOpacity>
+                      {/* Placeholder image - replace with your actual image handling */}
+                      <Image 
+                        source={require('../../assets/spa.png')} 
+                        style={styles.spaDealImage} 
+                      />
+                      <View style={styles.spaDealOverlay}>
+                        {calculateDiscount(deal.original_price, deal.price) && (
+                          <Text style={styles.spaDealDiscount}>
+                            {calculateDiscount(deal.original_price, deal.price)}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={styles.spaDealInfo}>
+                        <View style={styles.spaDealMeta}>
+                          <View style={styles.spaDealMetaItem}>
+                            <FontAwesome name="map-marker" size={12} color="#666" />
+                            <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
+                          </View>
+                          {deal.endsToday && (
+                            <View style={styles.spaDealMetaItem}>
+                              <FontAwesome name="clock-o" size={12} color="#666" />
+                              <Text style={styles.spaDealMetaText}>Ends Today</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={styles.spaDealTitle}>
+                          {deal.title}
+                          {deal.retailer_name && ` - ${deal.retailer_name}`}
+                        </Text>
+                        <Text style={styles.spaDealPrice}>
+                          ${deal.price} {deal.original_price > deal.price && (
+                            <Text style={styles.originalPrice}>${deal.original_price}</Text>
+                          )}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </Link>
+                ))
+              ) : (
+                <Text style={styles.noDealsText}>No nearby deals found</Text>
+              )}
+            </ScrollView>
+          )}
         </View>
-        {deal.endsToday && (
-          <View style={styles.spaDealMetaItem}>
-            <FontAwesome name="clock-o" size={12} color="#666" />
-            <Text style={styles.spaDealMetaText}>Ends Today</Text>
-          </View>
-        )}
-      </View>
-      {/* Title comes after meta info */}
-      <Text style={styles.spaDealTitle}>{deal.title}</Text>
-    </View>
-  </View>
-  </Link>
-))}
-
-        </ScrollView>
 
         <View style={styles.shopCategories}>
           <Text style={styles.sectionTitle}>Shop by categories</Text>
@@ -419,35 +512,35 @@ export default function Home() {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-      <Link href="/home" asChild>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="home" size={24} color="#666" />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
+        <Link href="/home" asChild>
+          <TouchableOpacity style={styles.navItem}>
+            <FontAwesome name="home" size={24} color="#FF6B6B" />
+            <Text style={[styles.navText, { color: "#FF6B6B" }]}>Home</Text>
+          </TouchableOpacity>
         </Link>
         <Link href="/(app)/settings/geofencing" asChild>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="compass" size={24} color="#666" />
-          <Text style={styles.navText}>Explore</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+            <FontAwesome name="compass" size={24} color="#666" />
+            <Text style={styles.navText}>Explore</Text>
+          </TouchableOpacity>
         </Link>
         <Link href="/saved" asChild>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="heart" size={24} color="#666" />
-          <Text style={styles.navText}>Saved</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+            <FontAwesome name="heart" size={24} color="#666" />
+            <Text style={styles.navText}>Saved</Text>
+          </TouchableOpacity>
         </Link>
-
         <Link href="/profile" asChild>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="user" size={24} color="#666" />
-          <Text style={styles.navText}>Profile</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+            <FontAwesome name="user" size={24} color="#666" />
+            <Text style={styles.navText}>Profile</Text>
+          </TouchableOpacity>
         </Link> 
       </View>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

@@ -49,7 +49,7 @@ export default function Login() {
         const response = await loginUserFromGoogle(user.email);
         if (response?.success) {
           Alert.alert("Success", "Login successfully");
-          router.push("/(auth)/dashboard");
+          router.push("/(app)/home");
         } else {
           console.log("Registration failed:", response?.message);
           Alert.alert("Error", response?.message);
@@ -142,12 +142,7 @@ export default function Login() {
 
         <TouchableOpacity 
           style={styles.button}
-          onPress={async () => {
-            const response = await handleLogin(); 
-            if (response?.success) {
-              router.push('/(auth)/dashboard');  // Navigate only if registration succeeds
-            }
-          }}
+          onPress={handleLogin}
         >
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>

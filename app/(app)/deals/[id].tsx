@@ -1,32 +1,48 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { getDealsById } from '@/api/deals/deals'; // Make sure to import the function
 
 export default function DealDetails() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();  // Get the deal id from the URL parameters
   const router = useRouter();
 
-  // Mock deal data - replace with actual API call
-  const deal = {
-    id,
-    title: '50% Off Premium Coffee Bundle',
-    price: '₹250',
-    originalPrice: '₹500',
-    validUntil: 'May 15, 2025',
-    description: 'Get our premium coffee bundle at half price. Includes 2 jars of single origin coffee beans, a premium coffee grinder, and our signature coffee mug.',
-    image: '',
-    terms: [
-      'Limited to one redemption per customer',
-      'Cannot be combined with other offers',
-      'Valid until May 15, 2025',
-      'No cash value'
-    ],
-    howToRedeem: [
-      'Click the "Redeem" button below',
-      'Show the updated code at checkout',
-      'Complete your purchase with savings'
-    ]
-  };
+  const [deal, setDeal] = useState(null);  // State to store the fetched deal
+  const [loading, setLoading] = useState(true);  // Loading state for fetching data
+
+  useEffect(() => {
+    const fetchDealDetails = async () => {
+      setLoading(true);  // Set loading to true while fetching data
+      const response = await getDealsById(Array.isArray(id) ? id[0] : id);  // Ensure id is a string
+        console.log("API Response:", response); // Debugging
+        
+      if (response.success) {
+        setDeal(response.data);  // Set the deal data in the state
+      } else {
+        Alert.alert('Error', response.message || 'Failed to load deal details');
+      }
+      setLoading(false);  // Set loading to false after fetching data
+    };
+
+    fetchDealDetails();  // Fetch the deal details when the component mounts
+  }, [id]);  // Fetch when the `id` changes (i.e., when navigating to this screen)
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading deal details...</Text>
+      </View>
+    );
+  }
+
+  if (!deal) {
+    return (
+      <View style={styles.container}>
+        <Text>No deal data available.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -45,7 +61,7 @@ export default function DealDetails() {
         </View>
 
         <Image
-          source={{ uri: deal.image }}
+          source={{ uri: deal.image || 'https://via.placeholder.com/400x300' }}  // Use a placeholder if image is missing
           style={styles.image}
         />
 
@@ -53,32 +69,49 @@ export default function DealDetails() {
           <Text style={styles.title}>{deal.title}</Text>
           
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>{deal.price}</Text>
-            <Text style={styles.originalPrice}>{deal.originalPrice}</Text>
+            <Text style={styles.price}>₹{deal.price}</Text>
+            <Text style={styles.originalPrice}>₹{deal.original_price}</Text>
           </View>
 
-          <Text style={styles.validUntil}>Valid until: {deal.validUntil}</Text>
+          <Text style={styles.validUntil}>Valid until: {new Date(deal.expires_at).toLocaleDateString()}</Text>
 
           <Text style={styles.description}>{deal.description}</Text>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>How to Redeem?</Text>
-            {deal.howToRedeem.map((step, index) => (
-              <View key={index} style={styles.bulletPoint}>
-                <Text style={styles.bulletNumber}>{index + 1}.</Text>
-                <Text style={styles.bulletText}>{step}</Text>
-              </View>
-            ))}
+            {/* Here you can add a list of redemption steps if provided */}
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bulletNumber}>1.</Text>
+              <Text style={styles.bulletText}>Click the "Redeem" button below</Text>
+            </View>
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bulletNumber}>2.</Text>
+              <Text style={styles.bulletText}>Show the updated code at checkout</Text>
+            </View>
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bulletNumber}>3.</Text>
+              <Text style={styles.bulletText}>Complete your purchase with savings</Text>
+            </View>
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Terms & Conditions</Text>
-            {deal.terms.map((term, index) => (
-              <View key={index} style={styles.bulletPoint}>
-                <Text style={styles.bullet}>•</Text>
-                <Text style={styles.bulletText}>{term}</Text>
-              </View>
-            ))}
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.bulletText}>Limited to one redemption per customer</Text>
+            </View>
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.bulletText}>Cannot be combined with other offers</Text>
+            </View>
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.bulletText}>Valid until {new Date(deal.expires_at).toLocaleDateString()}</Text>
+            </View>
+            <View style={styles.bulletPoint}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.bulletText}>No cash value</Text>
+            </View>
           </View>
         </View>
       </ScrollView>

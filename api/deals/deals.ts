@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.101:3000/api/deals"; 
+const API_URL = "http://192.168.0.103:3000/api/deals"; 
 
 /**
  * Add a new deal for a retailer
@@ -113,6 +113,28 @@ export const getDealAnalytics = async (dealId: string) => {
     });
 
     return { success: true, analytics: response.data };
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.error || "Failed to fetch analytics data" };
+  }
+};
+
+/**
+ * Fetch  data for a specific deal
+ * @param dealId - ID of the deal
+ */
+export const getDealsById = async (dealId: string) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "Unauthorized. No token found" };
+    }
+
+    const response = await axios.get(`${API_URL}/${dealId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return { success: true, data: response.data };
   } catch (error: any) {
     return { success: false, message: error.response?.data?.error || "Failed to fetch analytics data" };
   }

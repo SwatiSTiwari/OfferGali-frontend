@@ -1,20 +1,47 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import MapView, { Circle } from 'react-native-maps';
+import Slider from '@react-native-community/slider';
+import * as Location from 'expo-location'; // Import Location
 
 export default function GeofencingSetup() {
   const router = useRouter();
   const [isEnabled, setIsEnabled] = useState(false);
   const [radius, setRadius] = useState(2.8); // miles
+  const [currentLocation, setCurrentLocation] = useState<{
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+} | null>(null);
 
-  const initialRegion = {
-    latitude: 20.5937, // Latitude of India
-    longitude: 78.9629, // Longitude of India
-    latitudeDelta: 10,  // Adjusted for a wider view of India
-    longitudeDelta: 10, // Adjusted for a wider view of India
-  };
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to use this feature.');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setCurrentLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01, // Adjust for a closer view
+        longitudeDelta: 0.01, // Adjust for a closer view
+      });
+    })();
+  }, []);
+
+  if (!currentLocation) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading current location...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -27,13 +54,10 @@ export default function GeofencingSetup() {
       </View>
 
       <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={initialRegion} // Using India's coordinates
-        >
+        <MapView style={styles.map} initialRegion={currentLocation}>
           {isEnabled && (
             <Circle
-              center={initialRegion}
+              center={currentLocation}
               radius={radius * 1609.34} // Convert miles to meters
               fillColor="rgba(255, 75, 85, 0.1)"
               strokeColor="#FF4B55"
@@ -61,19 +85,25 @@ export default function GeofencingSetup() {
           <Text style={styles.radiusValue}>{radius.toFixed(1)} miles</Text>
         </View>
 
-        <View style={styles.sliderContainer}>
-          <Text>1 mile</Text>
-          <View style={styles.slider}>
-            <View style={[styles.sliderFill, { width: `${(radius / 5) * 100}%` }]} />
-          </View>
-          <Text>5 miles</Text>
-        </View>
+        <Slider
+          style={styles.slider}
+          minimumValue={1}
+          maximumValue={5}
+          step={0.1}
+          value={radius}
+          onValueChange={setRadius}
+          minimumTrackTintColor="#FF4B55"
+          maximumTrackTintColor="#eee"
+          thumbTintColor="#FF4B55"
+        />
 
         <View style={styles.locationContainer}>
           <FontAwesome name="map-marker" size={24} color="#FF4B55" />
           <View style={styles.locationText}>
             <Text style={styles.currentLocation}>Current Location</Text>
-            <Text style={styles.locationAddress}>123 Main street, Town, City</Text>
+            <Text style={styles.locationAddress}>
+              Lat: {currentLocation.latitude.toFixed(4)}, Lng: {currentLocation.longitude.toFixed(4)}
+            </Text>
           </View>
         </View>
       </View>
@@ -89,6 +119,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -140,23 +175,10 @@ const styles = StyleSheet.create({
     color: '#FF4B55',
     fontWeight: '600',
   },
-  sliderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
   slider: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#eee',
-    marginHorizontal: 10,
-    borderRadius: 2,
-  },
-  sliderFill: {
-    height: 4,
-    backgroundColor: '#FF4B55',
-    borderRadius: 2,
+    width: '100%',
+    height: 40,
+    marginBottom: 30,
   },
   locationContainer: {
     flexDirection: 'row',
