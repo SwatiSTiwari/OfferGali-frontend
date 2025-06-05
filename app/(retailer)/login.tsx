@@ -1,10 +1,19 @@
-
 import { useEffect, useState } from 'react';
 import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import { loginRetailer, forgotPassword } from '@/api/retailer/retailer';
+import { loginRetailer, forgotPassword, loginRetailerFromGoogle } from '@/api/retailer/retailer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Google from "expo-auth-session/providers/google";
+
+interface GoogleUser {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+  given_name?: string;
+  family_name?: string;
+}
 
 export default function RetailerLogin() {
   const [email, setEmail] = useState('');
@@ -14,71 +23,154 @@ export default function RetailerLogin() {
 
   const logo = require('../../assets/logo.png');
 
+  // Google OAuth setup
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    scopes: ["profile", "email"],
+  });
+
   // Clear AsyncStorage only ONCE when app starts
   useEffect(() => {
     const clearStorage = async () => {
       try {
         await AsyncStorage.clear();
-        console.log(" AsyncStorage cleared on app start!");
+        console.log("AsyncStorage cleared on app start!");
       } catch (error) {
-        console.error(" Error clearing AsyncStorage:", error);
+        console.error("Error clearing AsyncStorage:", error);
       }
     };
     clearStorage();
   }, []);
 
-  //  Handle Login
+  // Handle Google OAuth response
+  useEffect(() => {
+    if (response?.type === "success") {
+      getUserInfo(response.authentication?.accessToken);
+    }
+  }, [response]);
+
+  // Get user info from Google
+  const getUserInfo = async (token: string | undefined) => {
+    if (!token) return;
+    try {
+      const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const user: GoogleUser = await res.json();
+      console.log("Google user data:", user);
+      await handleGoogleLogin(user);
+    } catch (error) {
+      console.error("Google User Info Fetch Error:", error);
+      Alert.alert("Error", "Failed to get user information from Google");
+    }
+  };
+
+  // Handle Google Login
+  const handleGoogleLogin = async (user: GoogleUser) => {
+    try {
+      setLoading(true);
+      console.log("Attempting Google login with email:", user.email);
+
+      const response: { success: boolean; retailer?: any; message?: string; token?: string } = await loginRetailerFromGoogle(user.email, "google_auth_user");
+      console.log("Google login response:", response);
+
+      if (response?.success) {
+        Alert.alert("Success", "Login successful via Google!");
+        console.log("Navigating to Dashboard...");
+
+        // Store token in AsyncStorage
+        if (response.token) {
+          await AsyncStorage.setItem("token", response.token);
+          console.log("Token stored in AsyncStorage.");
+        }
+
+        // Store retailer ID in AsyncStorage
+        const retailerId = response.retailer?.id;
+        if (retailerId !== undefined) {
+          await AsyncStorage.setItem("retailer_id", JSON.stringify(retailerId));
+          console.log("Stored Retailer ID in AsyncStorage:", retailerId);
+        }
+
+        router.push("/(retailer)/dashboard");
+      } else {
+        console.log("Google login failed:", response?.message);
+        if (response?.message === "Retailer not found") {
+          Alert.alert(
+            "Account Not Found", 
+            "No account found with this Google email. Would you like to register?",
+            [
+              { text: "Cancel", style: "cancel" },
+              { 
+                text: "Register", 
+                onPress: () => router.push("/(retailer)/register") 
+              }
+            ]
+          );
+        } else {
+          Alert.alert("Error", response?.message || "Google login failed");
+        }
+      }
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      Alert.alert("Error", "Something went wrong with Google login. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle regular email/password login
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
-  
+
     console.log("Sending login data:", { email, password });
-  
+
     try {
+      setLoading(true);
       const response: { success: boolean; retailer?: any; message?: string; token?: string } = await loginRetailer(email, password);
-      console.log(" Login response:", response);
-  
+      console.log("Login response:", response);
+
       if (response?.success) {
         Alert.alert("Success", "Login successful");
-        console.log(" Navigating to Dashboard...");
-  
-        //  Store token in AsyncStorage
+        console.log("Navigating to Dashboard...");
+
+        // Store token in AsyncStorage
         if (response.token) {
           await AsyncStorage.setItem("token", response.token);
-          console.log(" Token stored in AsyncStorage.");
+          console.log("Token stored in AsyncStorage.");
         } else {
-          console.warn(" No token found in login response.");
+          console.warn("No token found in login response.");
         }
-  
-        //  Store retailer ID in AsyncStorage
+
+        // Store retailer ID in AsyncStorage
         const retailerId = response.retailer?.id;
         if (retailerId !== undefined) {
           await AsyncStorage.setItem("retailer_id", JSON.stringify(retailerId));
-          console.log(" Stored Retailer ID in AsyncStorage:", retailerId);
+          console.log("Stored Retailer ID in AsyncStorage:", retailerId);
         } else {
-          console.warn(" No retailer ID found in login response.");
+          console.warn("No retailer ID found in login response.");
         }
-  
+
         router.push("/(retailer)/dashboard");
       } else {
-        console.error(" Login Failed:", response?.message || "Unknown error");
+        console.error("Login Failed:", response?.message || "Unknown error");
         Alert.alert("Error", response?.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      console.error(" Login Error:", error);
+      console.error("Login Error:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
-  //  Handle Forgot Password
+  // Handle Forgot Password
   const handleForgotPassword = () => {
-    console.log(" Redirecting to Forgot Password Page...");
-    router.push("/forgetpass");  // Redirects to forgot password page
+    console.log("Redirecting to Forgot Password Page...");
+    router.push("/forgetpass");
   };
-  
 
   return (
     <View style={styles.container}>
@@ -125,14 +217,34 @@ export default function RetailerLogin() {
         </View>
 
         <TouchableOpacity 
-          style={styles.loginButton}
-          onPress={handleLogin} // ✅ Directly call handleLogin
+          style={[styles.loginButton, loading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}
         >
-          <Text style={styles.loginButtonText}>Login</Text>
+          <Text style={styles.loginButtonText}>
+            {loading ? "Signing in..." : "Login"}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
+
+        {/* Google Sign In Section */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Text style={styles.socialTitle}>Sign in with Google</Text>
+
+        <TouchableOpacity 
+          style={[styles.googleButton, loading && styles.buttonDisabled]} 
+          onPress={() => promptAsync()}
+          disabled={loading}
+        >
+          <FontAwesome name="google" size={24} color="#DB4437" />
         </TouchableOpacity>
 
         <View style={styles.footer}>
@@ -173,11 +285,9 @@ const styles = StyleSheet.create({
     borderColor: '#E8F5E9',
     backgroundColor: '#fff',
   },
-
-  logo:{
+  logo: {
     width: 150,
     height: 60,
-
   },
   formTitle: {
     fontSize: 14,
@@ -225,6 +335,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   forgotPassword: {
     alignItems: 'center',
     marginTop: 16,
@@ -233,10 +346,40 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
   },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#eee',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#666',
+  },
+  socialTitle: {
+    textAlign: 'center',
+    color: '#666',
+    marginBottom: 16,
+  },
+  googleButton: {
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 20,
   },
   footerText: {
     color: '#666',

@@ -62,6 +62,7 @@ export default function RegisterUser() {
   const handleRegisterGoogle = async (user: GoogleUser) => {
     try {
       const response = await registerUserFromGoogle(user.name, user.email, user.phone_number || "", user.picture);
+      console.log("Google Registration Response:", response);
       if (response?.success) {
         Alert.alert("Success", "Registered successfully");
         router.push("/(app)/home");
