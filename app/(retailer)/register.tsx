@@ -1,259 +1,303 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Link, useRouter } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
-import { registerRetailer } from '@/api/retailer/retailer';
+import { useState, useEffect } from "react";
+import {
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Image,
+} from "react-native";
+import { Link, useRouter } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
+import * as Google from "expo-auth-session/providers/google";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerRetailer, registerRetailerFromGoogle } from "@/api/retailer/retailer";
+
+interface GoogleUser {
+  name: string,
+  category: string,
+  location: string,
+  phone_number: string,
+  email: string,
+  picture: string,
+}
 
 export default function RetailerRegister() {
-  const [businessName, setBusinessName] = useState('');
-  const [category, setCategory] = useState('');
-  const [location, setLocation] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({
+    businessName: "",
+    category: "",
+    location: "",
+    contactNumber: "",
+    email: "",
+    password: "",
+  });
+
   const router = useRouter();
+  const logo = require("../../assets/logo.png");
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    scopes: ["profile", "email"],
+  });
 
+  useEffect(() => {
+    if (response?.type === "success") {
+      getUserInfo(response.authentication?.accessToken);
+    }
+  }, [response]);
 
+  const getUserInfo = async (token: string | undefined) => {
+  if (!token) return;
+  try {
+    const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const user = await res.json();
+    console.log("Actual Google user data:", user); // This will show you the real structure
+    await handleRegisterGoogle(user);
+  } catch (error) {
+    console.error("Google User Info Fetch Error:", error);
+  }
+};
 
+  const handleRegisterGoogle = async (user: GoogleUser) => {
+  try {
+    console.log("Attempting Google registration with user data:", user);
+
+    const response = await registerRetailerFromGoogle(
+      user.name,                    // business_name
+      "General",                    // category (default value)
+      "Not specified",              // location/address (default value)
+      "Not provided",               // phone_number (default value)
+      user.picture,                 // image (Google profile picture)
+      user.email                    // email
+    );
+
+    console.log("Registration response:", response);
+
+    if (response?.success) {
+      Alert.alert("Success", "Registered via Google successfully!");
+      router.push("/(retailer)/login");
+    } else {
+      Alert.alert("Error", response?.message || "Registration failed");
+      if (response?.message === "User already Exist! Please Login") {
+        router.push("/(retailer)/login");
+      }
+    }
+  } catch (error) {
+    console.error("Google Registration Error:", error);
+    Alert.alert("Error", "Something went wrong. Please try again.");
+  }
+};
+
+  const handleChange = (key: keyof typeof form) => (value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleRegister = async () => {
+    const { businessName, category, location, contactNumber, email, password } = form;
+
     if (!businessName || !category || !location || !contactNumber || !email || !password) {
       Alert.alert("Error", "Please fill all fields");
-      return { success: false };
+      return;
     }
-  
+
     try {
-      const response = await registerRetailer(businessName, category, location, contactNumber, email, password);
-  
-      if (response.success) {
-        Alert.alert("Success", "Retailer registered successfully");
-        return { success: true };
+      const response = await registerRetailer(
+        businessName,
+        category,
+        location,
+        contactNumber,
+        email,
+        password
+      );
+
+      if (response?.success) {
+        Alert.alert("Success", "Retailer Registered");
+        await AsyncStorage.setItem("retailerId", response.retailer.id.toString());
+        router.push("/(retailer)/login");
       } else {
-        console.log("Registration failed:", response.message); // Log error details
-        Alert.alert("Error", response.message);
-        return { success: false };
+        Alert.alert("Error", response?.message);
       }
     } catch (error) {
-      console.error("Unexpected error during registration:", error);
+      console.error("Registration Error:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
-      return { success: false };
     }
   };
-  
 
-  
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <FontAwesome name="arrow-left" size={20} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Retailer Sign Up</Text>
-        <View style={{ width: 20 }} />
+        <Image
+          source={require("@/assets/logo.png")}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Retailer Sign Up</Text>
+        <Text style={styles.subtitle}>Register your business</Text>
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.container}>
+      <View style={styles.form}>
+        <View style={styles.inputContainer}>
+          <FontAwesome name="building-o" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput placeholder="Business Name" style={styles.input} value={form.businessName} onChangeText={handleChange("businessName")} />
         </View>
 
-        <View style={styles.formContainer}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Business Name</Text>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="building-o" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter business name"
-                value={businessName}
-                onChangeText={setBusinessName}
-                placeholderTextColor="#999"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Business Category</Text>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="tag" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Select business category"
-                value={category}
-                onChangeText={setCategory}
-                placeholderTextColor="#999"
-              />
-              <FontAwesome name="chevron-down" size={16} color="#666" style={styles.dropdownIcon} />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Location</Text>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="map-marker" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter business location"
-                value={location}
-                onChangeText={setLocation}
-                placeholderTextColor="#999"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contact Number</Text>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="phone" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter contact number"
-                value={contactNumber}
-                onChangeText={setContactNumber}
-                keyboardType="phone-pad"
-                placeholderTextColor="#999"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter email address"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholderTextColor="#999"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
-              <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Create password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholderTextColor="#999"
-              />
-              <FontAwesome name="eye" size={20} color="#666" style={styles.dropdownIcon} />
-            </View>
-          </View>
-
-          <TouchableOpacity 
-  style={styles.registerButton}
-  onPress={async () => {
-    const response = await handleRegister();  // Call handleRegister function
-    if (response?.success) {
-      router.push('/(retailer)/login');  // Navigate only if registration succeeds
-    }
-  }}
->
-  <Text style={styles.registerButtonText}>Register</Text>
-</TouchableOpacity>
-
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <Link href="/(retailer)/login" style={styles.link}>Sign in</Link>
-          </View>
+        <View style={styles.inputContainer}>
+          <FontAwesome name="tag" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput placeholder="Category" style={styles.input} value={form.category} onChangeText={handleChange("category")} />
         </View>
-      </ScrollView>
-    </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="map-marker" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput placeholder="Location" style={styles.input} value={form.location} onChangeText={handleChange("location")} />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="phone" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput placeholder="Contact Number" style={styles.input} value={form.contactNumber} onChangeText={handleChange("contactNumber")} keyboardType="phone-pad" />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput placeholder="Email" style={styles.input} value={form.email} onChangeText={handleChange("email")} keyboardType="email-address" />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
+          <TextInput placeholder="Password" style={styles.input} value={form.password} onChangeText={handleChange("password")} secureTextEntry />
+        </View>
+
+        <TouchableOpacity style={styles.signupButton} onPress={handleRegister}>
+          <Text style={styles.signupButtonText}>Sign up</Text>
+        </TouchableOpacity>
+
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Text style={styles.socialTitle}>Sign up with Google</Text>
+
+        <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
+          <FontAwesome name="google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <Link href="/(retailer)/login" style={styles.link}>Sign in</Link>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
+    padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    alignItems: "center",
+    marginTop: 40,
+    marginBottom: 40,
   },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  logo: {
+    width: 100,
+    height: 40,
+    resizeMode: "contain",
+    marginBottom: 10,
   },
-  scrollView: {
-    flex: 1,
+  title: {
+    fontSize: 28,
+    fontWeight: "600",
   },
-  
-  formContainer: {
-    margin: 20,
-    padding: 20,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E8F5E9',
-    backgroundColor: '#fff',
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
+  subtitle: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 8,
+    color: "#666",
+  },
+  form: {
+    flex: 1,
+    paddingBottom: 20,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#E8F5E9',
+    borderColor: "#E8F5E9",
     borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    height: 48,
+    marginBottom: 16,
   },
   inputIcon: {
     marginRight: 10,
-    width: 20,
-    textAlign: 'center',
   },
   input: {
     flex: 1,
-    height: 44,
-    fontSize: 14,
-    color: '#333',
-  },
-  dropdownIcon: {
-    marginLeft: 10,
-  },
-  registerButton: {
-    backgroundColor: '#FF6B6B',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  registerButtonText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    color: "#333",
+  },
+  signupButton: {
+    backgroundColor: "#FF6B6B",
+    height: 48,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  signupButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#eee",
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: "#666",
+  },
+  socialTitle: {
+    textAlign: "center",
+    color: "#666",
+    marginBottom: 16,
+  },
+  googleButton: {
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    justifyContent: "center",
+    alignItems: "center",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 40,
+    paddingVertical: 10,
   },
   footerText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
   },
   link: {
-    color: '#2196F3',
+    color: "#2196F3",
+    fontWeight: "500",
     fontSize: 14,
-    fontWeight: '500',
+    marginLeft: 5,
   },
 });
