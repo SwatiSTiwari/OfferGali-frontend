@@ -35,7 +35,7 @@ export default function RegisterUser() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     scopes: ["profile", "email"],
-    // redirectUri: makeRedirectUri({ scheme: 'my-scheme', path: 'redirect' })
+    // redirectUri: "exp://192.168.0.102:8081/--/auth-redirect"
   });
 
   // Listen for authentication response

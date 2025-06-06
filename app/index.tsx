@@ -13,7 +13,8 @@ export default function OnboardingScreen() {
   useEffect(() => {
     const checkBackendConnection = async () => {
       try {
-        const response = await axios.get('http://192.168.0.107:3000/');
+        const response = await axios.get('http://192.168.0.102:3000/');
+
         if (response.status === 200 && response.data?.message) {
           console.log('Backend Connected', response.data.message);
         } else {
@@ -21,7 +22,7 @@ export default function OnboardingScreen() {
           console.log('Possibility->', 'The IP of your device is incorrect please check it and update');
         }
       } catch (error: any) {
-        Alert.alert('Backend Not Reachable', error.message || 'Could not connect to backend.');
+        console.log('Backend Not Reachable', error.message || 'Could not connect to backend.');
       }
     };
     checkBackendConnection();
