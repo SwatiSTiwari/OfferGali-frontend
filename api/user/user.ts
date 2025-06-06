@@ -202,7 +202,7 @@ export const deleteProfile = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    return { success: true, data: response.data, message: "Profile updated successfully" };
+    return { success: true, data: response.data, message: "Profile Deleted successfully" };
   } catch (error: any) {
     console.log(error)
     return { success: false, message: error.response?.data?.message || "Failed to update profile" };

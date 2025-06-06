@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState} from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Switch, ScrollView,Image, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import {getProfile} from "@/api/user/user";
+import {deleteProfile, getProfile} from "@/api/user/user";
+import { useRouter } from "expo-router";
 
 
 export default function Profile() {
+  const router = useRouter();
+  
   const [user, setUser] = useState({
     fullName: "John Doe",
     email: "",
@@ -38,6 +41,16 @@ export default function Profile() {
     const handleChange = (key: keyof typeof user) => (value: string) => {
     setUser((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handleDeleteAccount = async () => {
+    const response = await deleteProfile();
+    if (response.success) {
+      Alert.alert("Success", "Your account has been deleted successfully.");
+      router.push("/(auth)/register");
+    } else {
+      Alert.alert("Error", "Failed to delete account. Please try again later.");
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -119,7 +132,7 @@ export default function Profile() {
         </View>
 
         {/* Delete Account Button */}
-        <TouchableOpacity style={styles.deleteButton}>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
           <Feather name="trash-2" size={20} color="#FF4B55" />
           <Text style={styles.deleteButtonText}>Delete Account</Text>
         </TouchableOpacity>
