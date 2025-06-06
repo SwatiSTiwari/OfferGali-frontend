@@ -1,19 +1,44 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Switch, ScrollView,Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Switch, ScrollView,Image, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import {getProfile} from "@/api/user/user";
 
 
 export default function Profile() {
-  const [fullName, setFullName] = useState("John Doe");
-  const [email, setEmail] = useState("john@example.com");
-  const [password, setPassword] = useState("********");
-  const [pushNotifications, setPushNotifications] = useState(true);
-  
+  const [user, setUser] = useState({
+    fullName: "John Doe",
+    email: "",
+    password: "********",
+    pushNotifications: true,
+    profile: "../../assets/logo.png"
+  })
+  useEffect(() => {
+    const fetchUserData = async () => {
+       const user = await getProfile();
+      if (user) {
+        setUser({
+          fullName: user.data.name || "John Doe",
+          email: user.data.email || "Email not provided",
+          password: user.data.password || null,
+          pushNotifications: user.data.pushNotifications || true,
+          profile: user.data.image || "../../assets/logo.png"
+        });
 
-  const logo = require('../../assets/logo.png');
+      }else{
+        Alert.alert("Error", "Failed to fetch user data. Please try again later.");
+      }
+    }
+    fetchUserData();
+
+  }, [])
+
+    const handleChange = (key: keyof typeof user) => (value: string) => {
+    setUser((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -32,7 +57,7 @@ export default function Profile() {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
-              <Ionicons name="person-outline" size={40} color="#666" />
+              <Image source={{ uri: user.profile }} style={{ width: 40, height: 40, borderRadius: 20 }} />
             </View>
             <TouchableOpacity style={styles.addButton}>
               <Ionicons name="add" size={20} color="#666" />
@@ -46,7 +71,7 @@ export default function Profile() {
             <Text style={styles.label}>Full Name</Text>
             <View style={styles.inputContainer}>
               <Feather name="user" size={20} color="#666" />
-              <TextInput style={styles.input} value={fullName} onChangeText={setFullName} placeholder="John Doe" />
+              <TextInput style={styles.input} value={user.fullName} onChangeText={handleChange("fullName")} placeholder="John Doe" />
             </View>
           </View>
 
@@ -56,8 +81,8 @@ export default function Profile() {
               <Feather name="mail" size={20} color="#666" />
               <TextInput
                 style={styles.input}
-                value={email}
-                onChangeText={setEmail}
+                value={user.email}
+                onChangeText={handleChange("email")}
                 keyboardType="email-address"
                 placeholder="john@example.com"
               />
@@ -70,8 +95,8 @@ export default function Profile() {
               <Feather name="lock" size={20} color="#666" />
               <TextInput
                 style={styles.input}
-                value={password}
-                onChangeText={setPassword}
+                value={user.password}
+                onChangeText={handleChange("password")}
                 secureTextEntry
                 placeholder="********"
               />
@@ -84,8 +109,8 @@ export default function Profile() {
           <View style={styles.notificationHeader}>
             <Text style={styles.notificationTitle}>Push Notifications</Text>
             <Switch
-              value={pushNotifications}
-              onValueChange={setPushNotifications}
+              value={user.pushNotifications}
+              onValueChange={(value) => setUser((prev) => ({ ...prev, pushNotifications: value }))}
               trackColor={{ false: "#D1D1D1", true: "#34C759" }}
               thumbColor="#fff"
             />

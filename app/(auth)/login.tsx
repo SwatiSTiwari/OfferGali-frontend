@@ -38,7 +38,6 @@ export default function Login() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const user: GoogleUser = await res.json();
-      console.log(user)
       await handleLoginGoogle(user);
     } catch (error) {
       console.error("Google User Info Fetch Error:", error);
@@ -72,7 +71,7 @@ export default function Login() {
       if (response?.success) {
         Alert.alert("Success", "Login successfully");
         console.log("Login successful: User->", email);
-        return { success: true };
+        router.push("/(app)/home");
       } else {
         console.log("Login failed:", response?.message); // Log error details
         Alert.alert("Error", response?.message);

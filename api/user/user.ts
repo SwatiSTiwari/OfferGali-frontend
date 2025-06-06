@@ -86,12 +86,13 @@ export const registerUserFromGoogle= async (
 
     let latitude = location.coords.latitude
     let longitude = location.coords.longitude
+    
 
     const response = await axios.post(`${API_URL}/register/google`, {
         name,
         phone_number,
         email,
-        profile,
+        image: profile,
         latitude: latitude, 
         longitude: longitude,
       });
@@ -130,7 +131,7 @@ export const loginUserFromGoogle= async (
 // Forgot Password
 export const forgotPassword = async (email: string) => {
   try {
-    const response = await axios.post(`${API_URL}/api/users/sendpasswordmail`, { email });
+    const response = await axios.post(`${API_URL}/sendpasswordmail`, { email });
     return { success: true, message: response.data.message || "Check your email for reset link" };
   } catch (error: any) {
     console.log(error)
@@ -141,7 +142,7 @@ export const forgotPassword = async (email: string) => {
 // Reset Password
 export const resetPassword = async (token: string, newPassword: string) => {
   try {
-    const response = await axios.post(`${API_URL}/api/users/setpassword`, { token, newPassword });
+    const response = await axios.post(`${API_URL}/setpassword`, { token, newPassword });
     return { success: true, message: response.data.message || "Password reset successfully" };
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || "Failed to reset password" };
@@ -158,13 +159,14 @@ export const getProfile = async () => {
       return { success: false, message: "No token found" };
     }
 
-    const response = await axios.get(`${API_URL}/api/users/profile`, {
+    const response = await axios.get(`${API_URL}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     return { success: true, data: response.data };
   } catch (error: any) {
-    return { success: false, message: "Unauthorized" };
+    console.log(error)
+    return { success: false, message: error.response?.data?.message || "Failed to fetch profile" };
   }
 };
 
@@ -177,7 +179,7 @@ export const updateProfile = async (updatedData: any) => {
       return { success: false, message: "No token found" };
     }
 
-    const response = await axios.put(`${API_URL}/api/users/profileupdate`, updatedData, {
+    const response = await axios.put(`${API_URL}/profileupdate`, updatedData, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -196,7 +198,7 @@ export const deleteProfile = async () => {
       return { success: false, message: "No token found" };
     }
 
-    const response = await axios.delete(`${API_URL}/api/users/deleteuser`, {
+    const response = await axios.delete(`${API_URL}/deleteuser`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

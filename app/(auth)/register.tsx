@@ -52,7 +52,6 @@ export default function RegisterUser() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const user: GoogleUser = await res.json();
-
       await handleRegisterGoogle(user);
     } catch (error) {
       console.error("Google User Info Fetch Error:", error);
@@ -62,7 +61,6 @@ export default function RegisterUser() {
   const handleRegisterGoogle = async (user: GoogleUser) => {
     try {
       const response = await registerUserFromGoogle(user.name, user.email, user.phone_number || "", user.picture);
-      console.log("Google Registration Response:", response);
       if (response?.success) {
         Alert.alert("Success", "Registered successfully");
         router.push("/(app)/home");
