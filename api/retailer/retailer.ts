@@ -1,8 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-const API_URL = "http://192.168.0.102:3000/api/retailers"; // Change this to your backend URL if deployed
-
+const API_URL = `${process.env.EXPO_PUBLIC_BACKEND_API_URL}/api/retailers`; // Change ip in .env
 export const registerRetailer = async (
   business_name: string,
   category: string,

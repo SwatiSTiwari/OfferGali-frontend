@@ -13,7 +13,7 @@ export default function OnboardingScreen() {
   useEffect(() => {
     const checkBackendConnection = async () => {
       try {
-        const response = await axios.get('http://192.168.0.102:3000/');
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/`);
 
         if (response.status === 200 && response.data?.message) {
           console.log('Backend Connected', response.data.message);

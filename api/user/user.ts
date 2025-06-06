@@ -2,7 +2,7 @@ import axios from "axios";
 import * as Location from 'expo-location'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-const API_URL = "http://192.168.0.102:3000/api/users"; // Change this to your backend URL if deployed
+const API_URL = `${process.env.EXPO_PUBLIC_BACKEND_API_URL}/api/users`; // Change ip in .env
 
 export const registerUser = async (
   name: string,

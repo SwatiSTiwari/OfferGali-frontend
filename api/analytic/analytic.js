@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.0.102:3000/api/analytics"; // Your backend API URL
+const API_URL = `${process.env.EXPO_PUBLIC_BACKEND_API_URL}/api/analytics`; // change ip in .env
 
 // Helper to get the auth token
 const getAuthHeader = async () => {
