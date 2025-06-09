@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
-import {deleteProfile, getProfile} from "@/api/user/user";
+import {deleteProfile, getProfile,updateProfile} from "@/api/user/user";
 import { useRouter } from "expo-router";
 
 
@@ -51,6 +51,13 @@ export default function Profile() {
       Alert.alert("Error", "Failed to delete account. Please try again later.");
     }
   }
+
+
+  const handleSaveChanges = async () => {
+    
+      Alert.alert("Success", "Your profile has been updated successfully.");
+    
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -130,7 +137,10 @@ export default function Profile() {
           </View>
           <Text style={styles.notificationDescription}>Get notified about updates</Text>
         </View>
-
+        
+    <TouchableOpacity>
+           <Text style={styles.saveButtonText} onPress={handleSaveChanges}>Update Account</Text>
+        </TouchableOpacity>
         {/* Delete Account Button */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
           <Feather name="trash-2" size={20} color="#FF4B55" />
@@ -305,5 +315,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     color: "#666",
+  },
+  saveButtonText: {
+    backgroundColor: "#FF6B6B",
+    color: "#fff",
+    textAlign: "center",
+    paddingVertical: 12,
+    borderRadius: 8,
+    fontWeight: "600",
+    fontSize: 16,
+    marginHorizontal: 16,
+    marginTop: 24,
+    marginBottom: 0,
   },
 });
