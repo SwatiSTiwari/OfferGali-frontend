@@ -72,7 +72,6 @@ export default function RetailerLogin() {
       console.log("Attempting Google login with email:", user.email);
 
       const response: { success: boolean; retailer?: any; message?: string; token?: string } = await loginRetailerFromGoogle(user.email, "google_auth_user");
-      console.log("Google login response:", response);
 
       if (response?.success) {
         Alert.alert("Success", "Login successful via Google!");
@@ -130,7 +129,6 @@ export default function RetailerLogin() {
     try {
       setLoading(true);
       const response: { success: boolean; retailer?: any; message?: string; token?: string } = await loginRetailer(email, password);
-      console.log("Login response:", response);
 
       if (response?.success) {
         Alert.alert("Success", "Login successful");

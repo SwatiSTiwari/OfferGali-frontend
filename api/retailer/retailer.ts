@@ -40,7 +40,6 @@ export const loginRetailer = async (email: string, password: string) => {
       password,
     });
 
-    console.log("Login response:", response.data);
 
     const { token, retailer } = response.data;
 
