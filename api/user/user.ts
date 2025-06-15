@@ -66,16 +66,16 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
-export const registerUserFromGoogle= async (
+export const registerUserFromGoogle = async (
   name: string,
   email: string,
   phone_number: string,
   profile: string
 ) => {
   try {
-    const {status} = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
 
-    if(status !== 'granted'){
+    if (status !== 'granted') {
       Alert.alert("Permission Denied", "location permission is required");
       return;
     }
@@ -86,17 +86,17 @@ export const registerUserFromGoogle= async (
 
     let latitude = location.coords.latitude
     let longitude = location.coords.longitude
-    
+
 
     const response = await axios.post(`${API_URL}/register/google`, {
-        name,
-        phone_number,
-        email,
-        image: profile,
-        latitude: latitude, 
-        longitude: longitude,
-      });
-    const { token, user} = response.data;
+      name,
+      phone_number,
+      email,
+      image: profile,
+      latitude: latitude,
+      longitude: longitude,
+    });
+    const { token, user } = response.data;
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
@@ -109,14 +109,14 @@ export const registerUserFromGoogle= async (
   }
 };
 
-export const loginUserFromGoogle= async (
+export const loginUserFromGoogle = async (
   email: string,
 ) => {
   try {
     const response = await axios.post(`${API_URL}/login/google`, {
-        email,
-      });
-    const { token, user} = response.data;
+      email,
+    });
+    const { token, user } = response.data;
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
     await AsyncStorage.setItem("userId", user.id.toString());
@@ -237,7 +237,7 @@ export const markNotificationAsRead = async (notificationId: string) => {
     if (!token) {
       return { success: false, message: "No token found" };
     }
-    
+
     const response = await axios.patch(
       `${API_URL}/api/notifications/${notificationId}/read`,
       { notification_id: notificationId },
@@ -264,32 +264,7 @@ export interface LocationDeal {
   retailer_location: string;
 }
 
-export const fetchNearbyDeals = async () => {
-  try {
-    const token = await AsyncStorage.getItem("token");
 
-    if (!token) {
-      return { success: false, message: "No token found" };
-    }
-    
-    const response = await axios.get(
-      `${API_URL}/api/deals/location`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    return { 
-      success: true, 
-      data: response.data, 
-      message: "Nearby deals fetched successfully" 
-    };
-  } catch (error: any) {
-    console.log("Error fetching nearby deals:", error);
-    return { 
-      success: false, 
-      message: error.response?.data?.message || "Failed to fetch nearby deals" 
-    };
-  }
-};
 
 // Function to parse the retailer_location field from the PostGIS format
 export const parseLocation = (locationString: string) => {
@@ -298,16 +273,16 @@ export const parseLocation = (locationString: string) => {
     // This is a PostGIS EWKB (Extended Well-Known Binary) format
     // For a simple app, we'll just extract the latitude and longitude
     // In a real-world app, you might want to use a GIS library to parse this properly
-    
+
     // This is a simplified approach - you might need a better parser in production
     const coords = locationString.substring(18);
     const x = coords.substring(0, 16);
     const y = coords.substring(16, 32);
-    
+
     // Convert hex to decimal (simplified example)
     const lat = parseFloat(parseInt(y, 16).toString()) / 1000000;
     const lng = parseFloat(parseInt(x, 16).toString()) / 1000000;
-    
+
     return { lat, lng };
   } catch (error) {
     console.error("Error parsing location:", error);
@@ -320,11 +295,11 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
   const R = 3958.8; // Radius of the Earth in miles
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c;
   return d;
 };

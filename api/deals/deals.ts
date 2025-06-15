@@ -36,6 +36,35 @@ export const addDeal = async (deal: {
 };
 
 
+export const fetchNearbyDeals = async ({ latitude, longitude }: { latitude: number, longitude: number }) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "No token found" };
+    }
+
+    const response = await axios.get(
+      `${API_URL}/location?latitude=19.03582640&longitude=72.90765640`,
+      // `${API_URL}/location?latitude=${latitude}&longitude=${longitude}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Nearby deals fetched successfully"
+    };
+  } catch (error: any) {
+    console.log("Error fetching nearby deals:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to fetch nearby deals"
+    };
+  }
+};
+
+
 export const editDeal = async (
   dealId: string, // Add dealId as a parameter
   deal: {
@@ -91,7 +120,7 @@ export const getAllDeals = async () => {
     return { success: true, deals: response.data };
   } catch (error: any) {
     console.error("API Error:", error.response?.data || error.message);
-      return { success: false, message: error.response?.data?.error || "Failed to fetch deals", deals: [] };
+    return { success: false, message: error.response?.data?.error || "Failed to fetch deals", deals: [] };
   }
 };
 
