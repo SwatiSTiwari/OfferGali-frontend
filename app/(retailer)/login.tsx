@@ -57,7 +57,6 @@ export default function RetailerLogin() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const user: GoogleUser = await res.json();
-      console.log("Google user data:", user);
       await handleGoogleLogin(user);
     } catch (error) {
       console.error("Google User Info Fetch Error:", error);

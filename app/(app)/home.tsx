@@ -530,7 +530,10 @@ export default function Home() {
             <Text style={styles.navText}>Saved</Text>
           </TouchableOpacity>
         </Link>
-        <Link href="/profile" asChild>
+        <Link  href={{
+            pathname: "/profile",
+            params: { role: "users" }, // add your props here
+          }} asChild>
           <TouchableOpacity style={styles.navItem}>
             <FontAwesome name="user" size={24} color="#666" />
             <Text style={styles.navText}>Profile</Text>

@@ -75,7 +75,6 @@ export const registerRetailerFromGoogle = async (
       image: image || null                           // Use image instead of profile
     });
 
-    console.log("Google registration response:", response.data);
 
     const { token, retailer } = response.data;
     

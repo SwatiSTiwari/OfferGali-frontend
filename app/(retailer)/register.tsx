@@ -54,7 +54,6 @@ export default function RetailerRegister() {
       headers: { Authorization: `Bearer ${token}` },
     });
     const user = await res.json();
-    console.log("Actual Google user data:", user); // This will show you the real structure
     await handleRegisterGoogle(user);
   } catch (error) {
     console.error("Google User Info Fetch Error:", error);
@@ -74,7 +73,6 @@ export default function RetailerRegister() {
       user.email                    // email
     );
 
-    console.log("Registration response:", response);
 
     if (response?.success) {
       Alert.alert("Success", "Registered via Google successfully!");

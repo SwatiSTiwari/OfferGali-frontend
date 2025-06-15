@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator, Alert, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+  Image,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Link } from "expo-router";
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAllDeals } from "@/api/deals/deals";
 
@@ -27,7 +37,7 @@ export default function RetailerDashboard() {
       try {
         const id = await AsyncStorage.getItem("retailer_id");
         console.log("Retrieved Retailer ID:", id); // Debugging
-    
+
         if (id) {
           setRetailerId(parseInt(id));
         } else {
@@ -46,20 +56,21 @@ export default function RetailerDashboard() {
       console.log("Retailer ID not available yet, skipping fetchDeals");
       return;
     }
-  
+
     const fetchDeals = async () => {
       setLoading(true);
       try {
         const response = await getAllDeals();
         console.log("API Response:", response); // Debugging
-  
+
         if (response.success) {
           // Fix: Access the correct array inside `response.deals`
-          const filteredDeals = response.deals.deals.filter((deal: Deal) => 
-            deal.retailer_id === retailerId &&
-            new Date(deal.expiration_date) > new Date()
+          const filteredDeals = response.deals.deals.filter(
+            (deal: Deal) =>
+              deal.retailer_id === retailerId &&
+              new Date(deal.expiration_date) > new Date()
           );
-  
+
           console.log("Filtered Deals:", filteredDeals); // Debugging
           setDeals(filteredDeals);
         } else {
@@ -71,7 +82,7 @@ export default function RetailerDashboard() {
       }
       setLoading(false);
     };
-  
+
     fetchDeals();
   }, [retailerId]);
 
@@ -90,11 +101,18 @@ export default function RetailerDashboard() {
       <ScrollView style={styles.content}>
         {/* Loading Indicator */}
         {loading ? (
-          <ActivityIndicator size="large" color="#FF6B6B" style={{ marginTop: 20 }} />
+          <ActivityIndicator
+            size="large"
+            color="#FF6B6B"
+            style={{ marginTop: 20 }}
+          />
         ) : (
           <>
             <View style={styles.actionButtons}>
-              <TouchableOpacity style={styles.addButton} onPress={() => router.push("/(retailer)/deals/new")}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => router.push("/(retailer)/deals/new")}
+              >
                 <Text style={styles.addButtonText}>+ Add Deal</Text>
               </TouchableOpacity>
             </View>
@@ -112,12 +130,21 @@ export default function RetailerDashboard() {
                   </View>
                   <View style={styles.dealStats}>
                     <Text style={styles.dealInfo}>Views: {deal.views}</Text>
-                    <Text style={styles.dealInfo}>Redeemed: {deal.engagements}</Text>
+                    <Text style={styles.dealInfo}>
+                      Redeemed: {deal.engagements}
+                    </Text>
                   </View>
-                  <Text style={styles.dealExpiry}>Expires: {deal.expiration_date}</Text>
+                  <Text style={styles.dealExpiry}>
+                    Expires: {deal.expiration_date}
+                  </Text>
                   <TouchableOpacity
                     style={styles.editButton}
-                    onPress={() => router.push({ pathname: "/(retailer)/deals/edit", params: { id: deal.id.toString() } })}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(retailer)/deals/edit",
+                        params: { id: deal.id.toString() },
+                      })
+                    }
                   >
                     <Ionicons name="create-outline" size={18} color="#333" />
                     <Text style={styles.editButtonText}>Edit Deal</Text>
@@ -154,7 +181,13 @@ export default function RetailerDashboard() {
           </TouchableOpacity>
         </Link>
 
-        <Link href="/reatailer-profile" asChild>
+        <Link
+          href={{
+            pathname: "/profile",
+            params: { role: "retailers" }, // add your props here
+          }}
+          asChild
+        >
           <TouchableOpacity style={styles.navItem}>
             <FontAwesome name="user" size={24} color="#666" />
             <Text style={styles.navText}>Profile</Text>
@@ -167,26 +200,89 @@ export default function RetailerDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, backgroundColor: "#fff", borderBottomWidth: 1, borderBottomColor: "#eee" },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
   headerContent: { flexDirection: "row", alignItems: "center", gap: 8 },
   headerTitle: { fontSize: 18, fontWeight: "600" },
   content: { flex: 1 },
   actionButtons: { flexDirection: "row", padding: 16, gap: 12 },
-  addButton: { flex: 1, backgroundColor: "#FF6B6B", padding: 12, borderRadius: 8, alignItems: "center" },
+  addButton: {
+    flex: 1,
+    backgroundColor: "#FF6B6B",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
   addButtonText: { color: "#fff", fontWeight: "600" },
-  editButton: { flexDirection: "row", backgroundColor: "#fff", padding: 12, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e0e0e0", gap: 8, marginTop: 10 },
+  editButton: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    gap: 8,
+    marginTop: 10,
+  },
   editButtonText: { color: "#333", fontWeight: "600" },
-  sectionTitle: { fontSize: 18, fontWeight: "600", padding: 16, paddingBottom: 8 },
-  dealCard: { backgroundColor: "#fff", marginHorizontal: 16, marginBottom: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: "#e0e0e0" },
-  dealHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    padding: 16,
+    paddingBottom: 8,
+  },
+  dealCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  dealHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   dealTitle: { fontSize: 16, fontWeight: "600" },
-  statusBadge: { backgroundColor: "#E8F5E9", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  statusBadge: {
+    backgroundColor: "#E8F5E9",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
   statusText: { color: "#2E7D32", fontSize: 12, fontWeight: "500" },
-  dealStats: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  dealStats: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
   dealInfo: { color: "#666", fontSize: 14 },
   dealExpiry: { color: "#666", fontSize: 14 },
   noDeals: { textAlign: "center", marginTop: 20, fontSize: 16, color: "#666" },
-  bottomNav: { flexDirection: "row", justifyContent: "space-around", paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#F0F0F0", backgroundColor: "#fff", position: "absolute", bottom: 0, left: 0, right: 0 },
+  bottomNav: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+    backgroundColor: "#fff",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
   navItem: { padding: 4 },
   navText: { fontSize: 12, marginTop: 4, color: "#666" },
 });

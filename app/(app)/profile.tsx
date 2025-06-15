@@ -13,7 +13,7 @@ import {
 import {Image} from "expo-image"
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import {
   deleteProfile,
@@ -21,11 +21,14 @@ import {
   getProfile,
   updateProfile,
   updateProfileImage,
-} from "@/api/user/user";
+} from "@/api/profile";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 
 export default function Profile() {
+   const params = useLocalSearchParams();
+   const role = params.role as string;
+   
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [user, setUser] = useState({
@@ -39,14 +42,14 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const user = await getProfile();
+      const user = await getProfile(role);
       if (user) {
         setUser({
-          fullName: user.data.name || "John Doe",
+          fullName: user.data.name || user.data.business_name|| "John Doe",
           email: user.data.email || "Email not provided",
           pushNotifications: user.data.pushNotifications || true,
           profile: user.data.image || undefined,
-          emailEdit: user.data.password ? true : false,
+          emailEdit: user.data.password  ?(user.data.password === "google_auth_placeholder")? false: true : false,
           profileUpdateAt: Date.now(),
         });
       } else {
@@ -79,6 +82,7 @@ export default function Profile() {
 
     formData.append("email", user.email);
     formData.append("fullName", user.fullName);
+    formData.append("table", role);
 
     const response = await updateProfileImage(formData);
     if (response.success) {
@@ -125,7 +129,7 @@ if (status !== 'granted') {
   };
 
   const handleRemoveProfile = async () => {
-    const response = await deleteProfileImage();
+    const response = await deleteProfileImage(role);
     if (response.success) {
       Alert.alert("Success", "Profile image deleted successfully.");
       setUser((prev) => ({
@@ -135,7 +139,7 @@ if (status !== 'granted') {
       }));
       setModalVisible(false);
     } else {
-      Alert.alert("Error", "Failed to remove image. Please try again later.");
+      Alert.alert("Error", "Failed to upload image. Please try again later.");
     }
   };
 
@@ -144,22 +148,23 @@ if (status !== 'granted') {
   };
 
   const handleDeleteAccount = async () => {
-    const response = await deleteProfile();
+    const response = await deleteProfile(role);
     if (response.success) {
       Alert.alert("Success", "Your account has been deleted successfully.");
-      router.push("/(auth)/register");
+      router.push("/");
     } else {
       Alert.alert("Error", "Failed to delete account. Please try again later.");
     }
   };
 
   const handleUpdateAccount = async () => {
-    const response = await updateProfile(user);
+    const response = await updateProfile({...user, table: role});
     if (response.success) {
       Alert.alert("Success", "Your account has been updated successfully.");
-      router.push("/(app)/profile");
+      const searchParams = new URLSearchParams({ role });
+      router.push(`/(app)/profile?${searchParams.toString()}`);
     } else {
-      Alert.alert("Error", "Failed to delete account. Please try again later.");
+      Alert.alert("Error", "Failed to update account. Please try again later.");
     }
   };
 

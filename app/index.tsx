@@ -17,12 +17,11 @@ export default function OnboardingScreen() {
 
         if (response.status === 200 && response.data?.message) {
           console.log('Backend Connected', response.data.message);
-        } else {
-          console.log('Backend Error', 'Unexpected response from backend.');
-          console.log('Possibility->', 'The IP of your device is incorrect please check it and update');
-        }
+        } 
       } catch (error: any) {
         console.log('Backend Not Reachable', error.message || 'Could not connect to backend.');
+        console.log('Backend Error', 'Unexpected response from backend.');
+        console.log('Possibility->', 'The IP of your device is incorrect please check it and update');
       }
     };
     checkBackendConnection();
