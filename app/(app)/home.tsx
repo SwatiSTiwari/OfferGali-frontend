@@ -240,7 +240,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image,
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { fetchNearbyDeals, LocationDeal, calculateDistance } from '@/api/user/user';
+import { fetchNearbyDeals } from '@/api/deals/deals';
 
 const categories = [
   { id: 1, name: 'All Deals', icon: 'tags' },
@@ -269,91 +269,76 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All Deals');
   const [nearbyDeals, setNearbyDeals] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const logo = require('../../assets/logo.png');
 
+  const getNearbyDeals = async () => {
+    // Get user's location
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    console.log(location);
+    setUserLocation(location.coords);
+
+    if (!userLocation) {
+      console.log('Unable to get user location');
+      setErrorMsg('Unable to get user location');
+      return;
+    }
+
+    // Fetch nearby deals
+    const result = await fetchNearbyDeals({ latitude: userLocation?.latitude, longitude: userLocation?.longitude });
+    if (result.success) {
+      console.log('result', result);
+      setNearbyDeals(result.data.deals);
+    } else {
+      setErrorMsg(result.message);
+    }
+    setLoading(false);
+  }
   useEffect(() => {
-    (async () => {
-      // Get user's location
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setUserLocation(location.coords);
-
-      // Fetch nearby deals
-      const result = await fetchNearbyDeals();
-      if (result.success) {
-        // Process the deals to add distance information
-        const dealsWithDistance = result.data.map(deal => {
-          // Parse location from the PostGIS format
-          const retailerLoc = parsePostGISLocation(deal.retailer_location);
-          
-          // Calculate distance from user
-          let distance = '?';
-          if (userLocation) {
-            const distanceInMiles = calculateDistance(
-              userLocation.latitude, 
-              userLocation.longitude,
-              retailerLoc.lat, 
-              retailerLoc.lng
-            );
-            distance = `${distanceInMiles.toFixed(1)} miles`;
-          }
-          
-          return {
-            ...deal,
-            distance,
-            endsToday: isEndingToday(deal.expires_at)
-          };
-        });
-        
-        setNearbyDeals(dealsWithDistance);
-      } else {
-        setErrorMsg(result.message);
-      }
-      setLoading(false);
-    })();
+    getNearbyDeals();
   }, []);
 
   // Helper function to parse PostGIS location string
-  const parsePostGISLocation = (locationString) => {
-    try {
-      // Simplified parsing - in a real app, use a proper GIS library
-      const pattern = /POINT\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/i;
-      const match = locationString.match(pattern);
-      if (match) {
-        return { lng: parseFloat(match[1]), lat: parseFloat(match[2]) };
-      }
-      // Fallback parsing for the binary format
-      return { lat: 37.7749, lng: -122.4194 }; // Default to San Francisco if parsing fails
-    } catch (error) {
-      console.error("Error parsing location:", error);
-      return { lat: 37.7749, lng: -122.4194 };
-    }
-  };
+  // const parsePostGISLocation = (locationString) => {
+  //   try {
+  //     // Simplified parsing - in a real app, use a proper GIS library
+  //     const pattern = /POINT\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/i;
+  //     const match = locationString.match(pattern);
+  //     if (match) {
+  //       return { lng: parseFloat(match[1]), lat: parseFloat(match[2]) };
+  //     }
+  //     // Fallback parsing for the binary format
+  //     return { lat: 37.7749, lng: -122.4194 }; // Default to San Francisco if parsing fails
+  //   } catch (error) {
+  //     console.error("Error parsing location:", error);
+  //     return { lat: 37.7749, lng: -122.4194 };
+  //   }
+  // };
 
   // Check if deal is ending today
-  const isEndingToday = (expiresAt) => {
-    if (!expiresAt) return false;
-    
-    const today = new Date();
-    const expiryDate = new Date(expiresAt);
-    
-    return (
-      today.getDate() === expiryDate.getDate() &&
-      today.getMonth() === expiryDate.getMonth() &&
-      today.getFullYear() === expiryDate.getFullYear()
-    );
-  };
+  // const isEndingToday = (expiresAt) => {
+  //   if (!expiresAt) return false;
+
+  //   const today = new Date();
+  //   const expiryDate = new Date(expiresAt);
+
+  //   return (
+  //     today.getDate() === expiryDate.getDate() &&
+  //     today.getMonth() === expiryDate.getMonth() &&
+  //     today.getFullYear() === expiryDate.getFullYear()
+  //   );
+  // };
 
   // Calculate discount percentage
-  const calculateDiscount = (originalPrice, currentPrice) => {
+  const calculateDiscount = (originalPrice: number, currentPrice: number) => {
     if (!originalPrice || !currentPrice || originalPrice <= currentPrice) return null;
     const discount = ((originalPrice - currentPrice) / originalPrice) * 100;
     return `${Math.round(discount)}% Off`;
@@ -385,8 +370,8 @@ export default function Home() {
           />
         </View>
 
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.categoriesScroll}
           contentContainerStyle={styles.categoriesContainer}
@@ -420,78 +405,67 @@ export default function Home() {
               <Text style={styles.viewButtonText}>View</Text>
             </TouchableOpacity>
           </View>
-          <Image 
+          <Image
             source={require('../../assets/pizza.png')}
             style={styles.featuredImage}
           />
         </View>
 
         {/* Nearby Deals Section */}
-        <View style={styles.nearbyDealsSection}>
+        <View style={styles.spaDealsContainer}>
           <Text style={styles.sectionTitle}>Nearby Deals</Text>
           <Text style={styles.sectionSubtitle}>Special offers close to you</Text>
-          
-          {loading ? (
-            <ActivityIndicator size="large" color="#FF6B6B" style={styles.loader} />
-          ) : errorMsg ? (
-            <Text style={styles.errorText}>{errorMsg}</Text>
-          ) : (
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              style={styles.spaDealsScroll}
-              contentContainerStyle={styles.spaDealsContainer}
-            >
-              {nearbyDeals.length > 0 ? (
-                nearbyDeals.map((deal) => (
-                  <Link href={`/deals/${deal.deal_id}`} key={deal.deal_id} asChild>
-                    <TouchableOpacity style={styles.spaDealCard}>
-                      <TouchableOpacity style={styles.heartButton}>
-                        <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
-                      </TouchableOpacity>
-                      {/* Placeholder image - replace with your actual image handling */}
-                      <Image 
-                        source={require('../../assets/spa.png')} 
-                        style={styles.spaDealImage} 
-                      />
-                      <View style={styles.spaDealOverlay}>
-                        {calculateDiscount(deal.original_price, deal.price) && (
-                          <Text style={styles.spaDealDiscount}>
-                            {calculateDiscount(deal.original_price, deal.price)}
-                          </Text>
-                        )}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.spaDealsScroll}
+            contentContainerStyle={styles.spaDealsContainer}
+          >
+            {nearbyDeals.map((deal) => (
+              <Link href={`/deals/${deal.deal_id}`} key={deal.deal_id} asChild>
+                <TouchableOpacity style={styles.spaDealCard}>
+                  <TouchableOpacity style={styles.heartButton}>
+                    <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
+                  </TouchableOpacity>
+                  {/* Placeholder image - replace with your actual image handling */}
+                  <Image
+                    source={require('../../assets/spa.png')}
+                    style={styles.spaDealImage}
+                  />
+                  <View style={styles.spaDealOverlay}>
+                    {calculateDiscount(deal.original_price, deal.price) && (
+                      <Text style={styles.spaDealDiscount}>
+                        {calculateDiscount(deal.original_price, deal.price)}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={styles.spaDealInfo}>
+                    <View style={styles.spaDealMeta}>
+                      <View style={styles.spaDealMetaItem}>
+                        <FontAwesome name="map-marker" size={12} color="#666" />
+                        <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
                       </View>
-                      <View style={styles.spaDealInfo}>
-                        <View style={styles.spaDealMeta}>
-                          <View style={styles.spaDealMetaItem}>
-                            <FontAwesome name="map-marker" size={12} color="#666" />
-                            <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
-                          </View>
-                          {deal.endsToday && (
-                            <View style={styles.spaDealMetaItem}>
-                              <FontAwesome name="clock-o" size={12} color="#666" />
-                              <Text style={styles.spaDealMetaText}>Ends Today</Text>
-                            </View>
-                          )}
+                      {deal.endsToday && (
+                        <View style={styles.spaDealMetaItem}>
+                          <FontAwesome name="clock-o" size={12} color="#666" />
+                          <Text style={styles.spaDealMetaText}>Ends Today</Text>
                         </View>
-                        <Text style={styles.spaDealTitle}>
-                          {deal.title}
-                          {deal.retailer_name && ` - ${deal.retailer_name}`}
-                        </Text>
-                        <Text style={styles.spaDealPrice}>
-                          ${deal.price} {deal.original_price > deal.price && (
-                            <Text style={styles.originalPrice}>${deal.original_price}</Text>
-                          )}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  </Link>
-                ))
-              ) : (
-                <Text style={styles.noDealsText}>No nearby deals found</Text>
-              )}
-            </ScrollView>
-          )}
+                      )}
+                    </View>
+                    <Text style={styles.spaDealTitle}>
+                      {deal.title}
+                      {deal.retailer_name && ` - ${deal.retailer_name}`}
+                    </Text>
+                    <Text style={styles.spaDealPrice}>
+                      ${deal.price} {deal.original_price > deal.price && (
+                        <Text style={styles.originalPrice}>${deal.original_price}</Text>
+                      )}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            ))}
+          </ScrollView>
         </View>
 
         <View style={styles.shopCategories}>
@@ -538,7 +512,7 @@ export default function Home() {
             <FontAwesome name="user" size={24} color="#666" />
             <Text style={styles.navText}>Profile</Text>
           </TouchableOpacity>
-        </Link> 
+        </Link>
       </View>
     </View>
   );
@@ -562,7 +536,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
 
   },
-  logo:{
+  logo: {
     width: 50,
     height: 80,
     borderRadius: 20,
@@ -590,7 +564,7 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingHorizontal: 16,
     gap: 8,
-    
+
   },
   categoryChip: {
     paddingHorizontal: 16,
@@ -598,13 +572,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#f2faf2',
     marginRight: 8,
-    
+
   },
   categoryChipSelected: {
     backgroundColor: '#d2f7d2',
-    
-    
-    
+
+
+
   },
   categoryChipText: {
     color: '#666',
@@ -669,19 +643,19 @@ const styles = StyleSheet.create({
   },
   spaDealCard: {
     width: 200,
-  backgroundColor: '#f2faf2',
-  borderRadius: 12,
-  overflow: 'hidden',
-  marginRight: 16,
-  
-  shadowColor: '#fff',
-  shadowOffset: { width: 0, height: 4 }, // Increased shadow height for better visibility
-  shadowOpacity: 0.3, // Slightly higher opacity for a more prominent shadow
-  shadowRadius: 6, // Increased shadow radius
+    backgroundColor: '#f2faf2',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 16,
 
-  // Shadow for Android
-  elevation: 8, 
-  
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 4 }, // Increased shadow height for better visibility
+    shadowOpacity: 0.3, // Slightly higher opacity for a more prominent shadow
+    shadowRadius: 6, // Increased shadow radius
+
+    // Shadow for Android
+    elevation: 8,
+
   },
   spaDealImage: {
     width: '100%',

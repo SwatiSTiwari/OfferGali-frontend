@@ -34,14 +34,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
-        <Stack>
-          
+        <Stack screenOptions={{ headerShown: false }}>
+
           <Stack.Screen name="(app)" options={{ headerShown: false }} />
           <Stack.Screen name="(retailer)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          
+
         </Stack>
-        <StatusBar style="auto" />
+        {/* <StatusBar style="auto" /> */}
       </QueryClientProvider>
     </ThemeProvider>
   );

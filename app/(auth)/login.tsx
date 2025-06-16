@@ -16,7 +16,7 @@ export default function Login() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     scopes: [
-      "email", 
+      "email",
     ],
   });
 
@@ -43,35 +43,35 @@ export default function Login() {
       console.error("Google User Info Fetch Error:", error);
     }
   };
-   const handleLoginGoogle = async (user: GoogleUser) => {
-      try {
-        const response = await loginUserFromGoogle(user.email);
-        if (response?.success) {
-          Alert.alert("Success", "Login successfully");
-          router.push("/(app)/home");
-        } else {
-          console.log("Registration failed:", response?.message);
-          Alert.alert("Error", response?.message);
-          router.push(response?.message === "User already Exist! Please Login" ? "/(auth)/login" : "/(auth)/register");
-        }
-      } catch (error) {
-        console.error("Unexpected error during registration:", error);
-        Alert.alert("Error", "Something went wrong. Please try again.");
+  const handleLoginGoogle = async (user: GoogleUser) => {
+    try {
+      const response = await loginUserFromGoogle(user.email);
+      if (response?.success) {
+        Alert.alert("Success", "Login successfully");
+        router.push("/(auth)/profile-setup");
+      } else {
+        console.log("Registration failed:", response?.message);
+        Alert.alert("Error", response?.message);
+        router.push(response?.message === "User already Exist! Please Login" ? "/(auth)/login" : "/(auth)/register");
       }
+    } catch (error) {
+      console.error("Unexpected error during registration:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    }
   };
 
   const handleLogin = async () => {
-    if (!email  || !password) {
+    if (!email || !password) {
       Alert.alert("Error", "Please fill all fields");
       return { success: false };
     }
-  
+
     try {
       const response = await loginUser(email, password);
       if (response?.success) {
         Alert.alert("Success", "Login successfully");
         console.log("Login successful: User->", email);
-        router.push("/(app)/home");
+        router.push("/(auth)/profile-setup");
       } else {
         console.log("Login failed:", response?.message); // Log error details
         Alert.alert("Error", response?.message);
@@ -84,29 +84,29 @@ export default function Login() {
     }
   };
 
-   const handleForgotPassword = async () => {
-      if (!email) {
-        Alert.alert("Enter Email", "Please enter your email to reset your password.");
-        return;
-      }
-  
-      setLoading(true);
-      const response = await forgotPassword(email);
-      setLoading(false);
-  
-      if (response.success) {
-        Alert.alert("Success, Check your mail to get reset password link", response.message);
-        // Navigate to the Reset Password screen and pass email as a parameter
-        router.push(`/reset?email=${email}`);
-      } else {
-        Alert.alert("Error", response.message);
-      }
-    };
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert("Enter Email", "Please enter your email to reset your password.");
+      return;
+    }
+
+    setLoading(true);
+    const response = await forgotPassword(email);
+    setLoading(false);
+
+    if (response.success) {
+      Alert.alert("Success, Check your mail to get reset password link", response.message);
+      // Navigate to the Reset Password screen and pass email as a parameter
+      router.push(`/reset?email=${email}`);
+    } else {
+      Alert.alert("Error", response.message);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image 
+        <Image
           source={logo}
           style={styles.logo}
         />
@@ -115,7 +115,7 @@ export default function Login() {
       </View>
 
       <View style={styles.form}>
-      <View style={styles.inputContainer}>
+        <View style={styles.inputContainer}>
           <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
@@ -139,7 +139,7 @@ export default function Login() {
           />
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.button}
           onPress={handleLogin}
         >
@@ -158,7 +158,7 @@ export default function Login() {
           <TouchableOpacity style={styles.socialButton}>
             <FontAwesome name="facebook" size={20} color="#4267B2" />
           </TouchableOpacity>
-          
+
         </View>
       </View>
     </View>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
     marginBottom: 40,
   },
-  
+
   logo: {
     width: 150,
     height: 60,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 12,
   },
-  inputIcon:{
+  inputIcon: {
     marginRight: 12,
   },
   input: {
