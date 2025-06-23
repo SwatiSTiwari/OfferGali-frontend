@@ -66,10 +66,17 @@ export default function RetailerDashboard() {
         if (response.success) {
           // Fix: Access the correct array inside `response.deals`
           const filteredDeals = response.deals.deals.filter(
-            (deal: Deal) =>
-              deal.retailer_id === retailerId &&
-              new Date(deal.expiration_date) > new Date()
-          );
+  (deal: Deal) => {
+    const today = new Date();
+    const expirationDate = new Date(deal.expiration_date);
+    
+    // Set both dates to start of day for comparison
+    today.setHours(0, 0, 0, 0);
+    expirationDate.setHours(0, 0, 0, 0);
+    
+    return deal.retailer_id === retailerId && expirationDate >= today;
+  }
+);
 
           console.log("Filtered Deals:", filteredDeals); // Debugging
           setDeals(filteredDeals);

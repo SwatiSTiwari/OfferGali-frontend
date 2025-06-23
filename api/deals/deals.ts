@@ -45,8 +45,8 @@ export const fetchNearbyDeals = async ({ latitude, longitude }: { latitude: numb
     }
 
     const response = await axios.get(
-      `${API_URL}/location?latitude=19.03582640&longitude=72.90765640`,
-      // `${API_URL}/location?latitude=${latitude}&longitude=${longitude}`,
+      // `${API_URL}/location?latitude=19.03582640&longitude=72.90765640`,
+       `${API_URL}/location?latitude=${latitude}&longitude=${longitude}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 

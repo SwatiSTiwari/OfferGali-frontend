@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import { deleteProfile, getProfile, updateProfile } from "@/api/user/user";
+import { deleteProfile, getProfile, updateProfile } from "@/api/profile";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -17,7 +17,7 @@ export default function RetailerProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
-      const response = await getProfile();
+      const response = await getProfile("users");
       setLoading(false);
 
       if (response.success) {
@@ -69,7 +69,7 @@ export default function RetailerProfile() {
 
   const handleDeleteProfile = async () => {
     setLoading(true);
-    const response = await deleteProfile();
+    const response = await deleteProfile("users");
     setLoading(false);
 
     if (response.success) {
