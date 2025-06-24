@@ -286,14 +286,14 @@ export default function Home() {
     console.log(location);
     setUserLocation(location.coords);
 
-    if (!userLocation) {
+    if (!location) {
       console.log('Unable to get user location');
       setErrorMsg('Unable to get user location');
       return;
     }
 
     // Fetch nearby deals
-    const result = await fetchNearbyDeals({ latitude: userLocation?.latitude, longitude: userLocation?.longitude });
+    const result = await fetchNearbyDeals({ latitude: location?.latitude, location: location?.longitude });
     if (result.success) {
       console.log('result', result);
       setNearbyDeals(result.data.deals);
