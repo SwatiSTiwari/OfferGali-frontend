@@ -1,7 +1,7 @@
 // Debug script to test notification API
 const axios = require('axios');
 
-const API_URL = 'http://192.168.0.104:3000/api/notifications';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_API_URL +'/api/notifications';
 
 async function testAPI() {
   try {

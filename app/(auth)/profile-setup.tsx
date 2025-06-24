@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Checkbox } from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { updateProfile } from '@/api/profile';
+import { updateUserData } from '@/api/user/user';
 
 const interests = [
   'Clothing',
@@ -48,11 +48,11 @@ export default function ProfileSetup() {
           interests: selectedInterests,
           notifications: notifications,
         },
-
+        profile_completed: true,
       };
 
       // Call the updateProfile function to update the user profile
-      const response = await updateProfile(updatedData);
+      const response = await updateUserData(updatedData);
 
       if (response.success) {
         router.push('/home');  // Navigate to home or any other screen on success
@@ -124,7 +124,7 @@ export default function ProfileSetup() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={router.push('/home')}>
+        onPress={savePreferences}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </ScrollView>

@@ -48,9 +48,13 @@ export default function Login() {
       const response = await loginUserFromGoogle(user.email);
       if (response?.success) {
         Alert.alert("Success", "Login successfully");
+        if (response?.user?.profile_completed) {
         router.push("/(app)/home");
+        }else{
+        router.push("/(auth)/profile-setup");
+        }
       } else {
-        console.log("Registration failed:", response?.message);
+        console.log("Login failed:", response?.message);
         Alert.alert("Error", response?.message);
         router.push(response?.message === "User already Exist! Please Login" ? "/(auth)/login" : "/(auth)/register");
       }

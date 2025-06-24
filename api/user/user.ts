@@ -228,3 +228,24 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
 const toRad = (value: number) => {
   return value * Math.PI / 180;
 };
+
+// 🔹 Update User Preferences
+export const updateUserData = async (updatedData: any) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "No token found" };
+    }
+
+    const response = await axios.put(`${API_URL}/updatedata`, updatedData, {
+      headers: { Authorization: `Bearer ${token}` },
+
+    });
+
+    return { success: true,  message: "Profile updated successfully" };
+  } catch (error: any) {
+    console.log(error)
+    return { success: false, message: error.response?.data?.message || "Failed to update profile" };
+  }
+};

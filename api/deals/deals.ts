@@ -115,7 +115,6 @@ export const getAllDeals = async () => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log("Deals API Response:", response.data);
 
     return { success: true, deals: response.data };
   } catch (error: any) {

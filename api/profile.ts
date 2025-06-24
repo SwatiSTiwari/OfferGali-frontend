@@ -106,3 +106,4 @@ export const deleteProfile = async (role: string) => {
     return { success: false, message: error.response?.data?.message || "Failed to update profile" };
   }
 };
+

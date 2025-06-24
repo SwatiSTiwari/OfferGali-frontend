@@ -29,13 +29,15 @@ const shopCategories = [
 
 export default function Home() {
   interface NearbyDeal {
-    deal_id: string | number;
+    [expiration_date: string]: string | number | Date;
+    id: any;
     title: string;
-    retailer_name?: string;
+    // retailer_name?: string;
     price: number;
     original_price: number;
     distance: string;
-    endsToday?: boolean;
+    category: string;
+    // endsToday?: boolean;
     // Add other properties as needed
   }
 
@@ -45,7 +47,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
+  const [filteredDeals, setFilteredDeals] = useState<NearbyDeal[]>([]);
+  
   const logo = require('../../assets/logo.png');
 
   const getNearbyDeals = async () => {
@@ -57,7 +60,6 @@ export default function Home() {
     }
 
     let location = await Location.getCurrentPositionAsync({});
-    console.log(location);
     setUserLocation(location.coords);
 
     if (!location.coords) {
@@ -69,32 +71,32 @@ export default function Home() {
     // Fetch nearby deals using the location.coords directly
     const result = await fetchNearbyDeals({ latitude: location.coords.latitude, longitude: location.coords.longitude });
     if (result.success) {
-      console.log('result', result);
       // If no deals returned, use mock data for testing
       if (result.data.deals && result.data.deals.length === 0) {
         console.log('No deals found, using mock data for testing');
-        setNearbyDeals([
-          {
-            deal_id: 1,
-            title: '50% Off Pizza',
-            retailer_name: 'Pizza Palace',
-            price: 10.99,
-            original_price: 21.98,
-            distance: '0.5 miles',
-            endsToday: false,
-          },
-          {
-            deal_id: 2,
-            title: 'Buy 1 Get 1 Free Coffee',
-            retailer_name: 'Coffee Corner',
-            price: 4.50,
-            original_price: 9.00,
-            distance: '1.2 miles',
-            endsToday: true,
-          },
-        ]);
+        // setNearbyDeals([
+        //   {
+        //     deal_id: 1,
+        //     title: '50% Off Pizza',
+        //     retailer_name: 'Pizza Palace',
+        //     price: 10.99,
+        //     original_price: 21.98,
+        //     distance: '0.5 miles',
+        //     endsToday: false,
+        //   },
+        //   {
+        //     deal_id: 2,
+        //     title: 'Buy 1 Get 1 Free Coffee',
+        //     retailer_name: 'Coffee Corner',
+        //     price: 4.50,
+        //     original_price: 9.00,
+        //     distance: '1.2 miles',
+        //     endsToday: true,
+        //   },
+        // ]);
       } else {
         setNearbyDeals(result.data.deals);
+        setFilteredDeals(result.data.deals);
       }
     } else {
       setErrorMsg(result.message);
@@ -104,6 +106,10 @@ export default function Home() {
   useEffect(() => {
     getNearbyDeals();
   }, []);
+
+  useEffect(() => {
+  filterDeals();
+}, [nearbyDeals, searchQuery, selectedCategory]);
 
   // Helper function to parse PostGIS location string
   // const parsePostGISLocation = (locationString) => {
@@ -142,6 +148,26 @@ export default function Home() {
     const discount = ((originalPrice - currentPrice) / originalPrice) * 100;
     return `${Math.round(discount)}% Off`;
   };
+
+  const filterDeals = () => {
+  let deals = nearbyDeals;
+
+  // Filter by category (if not "All Deals")
+  if (selectedCategory !== "All Deals") {
+    deals = deals.filter(deal =>
+      deal.category?.toLowerCase() === selectedCategory.toLowerCase()
+    );
+  }
+
+  // Filter by search query (title)
+  if (searchQuery.trim() !== "") {
+    deals = deals.filter(deal =>
+      deal.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  setFilteredDeals(deals);
+};
 
   return (
     <View style={styles.container}>
@@ -194,7 +220,64 @@ export default function Home() {
           ))}
         </ScrollView>
 
-        <View style={styles.featuredDeal}>
+        {/* Nearby Deals Section */}
+        <View style={styles.spaDealsContainer}>
+          <Text style={styles.sectionTitle}>Nearby Deals</Text>
+          <Text style={styles.sectionSubtitle}>Special offers close to you</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.spaDealsScroll}
+            contentContainerStyle={styles.spaDealsContainer}
+          >
+            {filteredDeals.map((deal) => (
+              <Link href={`/deals/${deal.id}`} key={deal.id} asChild>
+                <TouchableOpacity style={styles.spaDealCard}>
+                  <View style={styles.heartButton}>
+                    <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
+                  </View>
+                  {/* Placeholder image - replace with your actual image handling */}
+                  <Image
+                    source={require('../../assets/spa.png')}
+                    style={styles.spaDealImage}
+                  />
+                  <View style={styles.spaDealOverlay}>
+                    {calculateDiscount(0, 0) && (
+                      <Text style={styles.spaDealDiscount}>
+                        {calculateDiscount(0, 0)}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={styles.spaDealInfo}>
+                    <View style={styles.spaDealMeta}>
+                      {/* <View style={styles.spaDealMetaItem}>
+                        <FontAwesome name="map-marker" size={12} color="#666" />
+                        <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
+                      </View> */}
+                      {new Date(deal.expiration_date).getTime() > new Date().getTime() && (
+                        <View style={styles.spaDealMetaItem}>
+                          <FontAwesome name="clock-o" size={12} color="#666" />
+                          <Text style={styles.spaDealMetaText}>Ends Today</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.spaDealTitle}>
+                      {deal.title}
+                      {/* {deal.retailer_name && ` - ${deal.retailer_name}`} */}
+                    </Text>
+                    {/* <Text style={styles.spaDealPrice}>
+                      ${deal.price} {deal.original_price > deal.price && (
+                        <Text style={styles.originalPrice}>${deal.original_price}</Text>
+                      )}
+                    </Text> */}
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            ))}
+          </ScrollView>
+        </View>
+
+          <View style={styles.featuredDeal}>
           <View style={styles.featuredContent}>
             <Text style={styles.featuredTitle}>Buy 1 Get 1 Free</Text>
             <Text style={styles.featuredDescription}>
@@ -208,63 +291,6 @@ export default function Home() {
             source={require('../../assets/pizza.png')}
             style={styles.featuredImage}
           />
-        </View>
-
-        {/* Nearby Deals Section */}
-        <View style={styles.spaDealsContainer}>
-          <Text style={styles.sectionTitle}>Nearby Deals</Text>
-          <Text style={styles.sectionSubtitle}>Special offers close to you</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.spaDealsScroll}
-            contentContainerStyle={styles.spaDealsContainer}
-          >
-            {nearbyDeals.map((deal) => (
-              <Link href={`/deals/${deal.deal_id}`} key={deal.deal_id} asChild>
-                <TouchableOpacity style={styles.spaDealCard}>
-                  <TouchableOpacity style={styles.heartButton}>
-                    <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
-                  </TouchableOpacity>
-                  {/* Placeholder image - replace with your actual image handling */}
-                  <Image
-                    source={require('../../assets/spa.png')}
-                    style={styles.spaDealImage}
-                  />
-                  <View style={styles.spaDealOverlay}>
-                    {calculateDiscount(deal.original_price, deal.price) && (
-                      <Text style={styles.spaDealDiscount}>
-                        {calculateDiscount(deal.original_price, deal.price)}
-                      </Text>
-                    )}
-                  </View>
-                  <View style={styles.spaDealInfo}>
-                    <View style={styles.spaDealMeta}>
-                      <View style={styles.spaDealMetaItem}>
-                        <FontAwesome name="map-marker" size={12} color="#666" />
-                        <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
-                      </View>
-                      {deal.endsToday && (
-                        <View style={styles.spaDealMetaItem}>
-                          <FontAwesome name="clock-o" size={12} color="#666" />
-                          <Text style={styles.spaDealMetaText}>Ends Today</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={styles.spaDealTitle}>
-                      {deal.title}
-                      {deal.retailer_name && ` - ${deal.retailer_name}`}
-                    </Text>
-                    <Text style={styles.spaDealPrice}>
-                      ${deal.price} {deal.original_price > deal.price && (
-                        <Text style={styles.originalPrice}>${deal.original_price}</Text>
-                      )}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </Link>
-            ))}
-          </ScrollView>
         </View>
 
         <View style={styles.shopCategories}>

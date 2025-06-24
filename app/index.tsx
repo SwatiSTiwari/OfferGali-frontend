@@ -13,12 +13,13 @@ export default function OnboardingScreen() {
   useEffect(() => {
     const checkBackendConnection = async () => {
       try {
+        console.log(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/`)
         const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/`);
-
         if (response.status === 200 && response.data?.message) {
           console.log('Backend Connected', response.data.message);
         } 
       } catch (error: any) {
+        console.log(error)
         console.log('Backend Not Reachable', error.message || 'Could not connect to backend.');
         console.log('Backend Error', 'Unexpected response from backend.');
         console.log('Possibility->', 'The IP of your device is incorrect please check it and update');
