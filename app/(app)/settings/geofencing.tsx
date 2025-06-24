@@ -5,6 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import MapView, { Circle } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location'; // Import Location
+import Constants from 'expo-constants';
 
 export default function GeofencingSetup() {
   const router = useRouter();
@@ -16,6 +17,9 @@ export default function GeofencingSetup() {
   latitudeDelta: number;
   longitudeDelta: number;
 } | null>(null);
+
+  // Debug: Check if API key is available
+  console.log('Google Maps API Key:');
 
   useEffect(() => {
     (async () => {

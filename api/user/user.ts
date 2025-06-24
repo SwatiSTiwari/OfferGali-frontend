@@ -148,46 +148,29 @@ export const resetPassword = async (token: string, newPassword: string) => {
 };
 
 
-export const fetchNotifications = async () => {
-  try {
-    const token = await AsyncStorage.getItem("token");
 
-    if (!token) {
-      return { success: false, message: "No token found" };
-    }
-
-    const response = await axios.get(`${API_URL}/api/notifications`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return { success: true, data: response.data, message: "Notifications fetched successfully" };
-  } catch (error: any) {
-    console.log("Error fetching notifications:", error);
-    return { success: false, message: error.response?.data?.message || "Failed to fetch notifications" };
-  }
-};
 
 // Function to mark a notification as read
-export const markNotificationAsRead = async (notificationId: string) => {
-  try {
-    const token = await AsyncStorage.getItem("token");
+// export const markNotificationAsRead = async (notificationId: string) => {
+//   try {
+//     const token = await AsyncStorage.getItem("token");
 
-    if (!token) {
-      return { success: false, message: "No token found" };
-    }
+//     if (!token) {
+//       return { success: false, message: "No token found" };
+//     }
 
-    const response = await axios.patch(
-      `${API_URL}/api/notifications/${notificationId}/read`,
-      { notification_id: notificationId },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+//     const response = await axios.patch(
+//       `${API_URL}/api/notifications/${notificationId}/read`,
+//       { notification_id: notificationId },
+//       { headers: { Authorization: `Bearer ${token}` } }
+//     );
 
-    return { success: true, data: response.data, message: "Notification marked as read" };
-  } catch (error: any) {
-    console.log("Error marking notification as read:", error);
-    return { success: false, message: error.response?.data?.message || "Failed to mark notification as read" };
-  }
-};
+//     return { success: true, data: response.data, message: "Notification marked as read" };
+//   } catch (error: any) {
+//     console.log("Error marking notification as read:", error);
+//     return { success: false, message: error.response?.data?.message || "Failed to mark notification as read" };
+//   }
+// };
 
 export interface LocationDeal {
   deal_id: string;
