@@ -26,6 +26,8 @@ export const registerRetailer = async (
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
+        await AsyncStorage.setItem("retailerId", retailer.id.toString());
+    
 
     return { success: true, retailer };
   } catch (error: any) {
@@ -45,6 +47,8 @@ export const loginRetailer = async (email: string, password: string) => {
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("retailerId", retailer.id.toString());
+
 
     return { success: true, retailer };
   } catch (error: any) {
@@ -81,7 +85,7 @@ export const registerRetailerFromGoogle = async (
     if (token && retailer) {
       // Store token for authentication
       await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("retailerID", retailer.id.toString());
+      await AsyncStorage.setItem("retailerId", retailer.id.toString());
       
       return { success: true, retailer };
     } else {
@@ -110,7 +114,7 @@ export const loginRetailerFromGoogle= async (
     const { token, retailer } = response.data;
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
-    await AsyncStorage.setItem("userId", retailer.id.toString());
+    await AsyncStorage.setItem("retailerId", retailer.id.toString());
 
     return { success: true, retailer };
   } catch (error: any) {

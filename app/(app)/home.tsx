@@ -6,10 +6,15 @@ import * as Location from 'expo-location';
 import { fetchNearbyDeals } from '@/api/deals/deals';
 
 const categories = [
-  { id: 1, name: 'All Deals', icon: 'tags' },
-  { id: 2, name: 'Food', icon: 'cutlery' },
-  { id: 3, name: 'Shopping', icon: 'shopping-bag' },
-  { id: 4, name: 'Entertainment', icon: 'film' },
+  { id: 1, name: 'All Deals'},
+  { id: 2, name: 'Clothing'},
+  { id: 3, name: 'Groceries'},
+  { id: 4, name: 'Beauty Products'},
+  { id: 5, name: 'Sports & Fitness'},
+  { id: 6, name: 'Home & Furniture'},
+  { id: 7, name: 'Toys & Baby products'},
+  { id: 8, name: 'Books & Stationery'},
+  { id: 9, name: 'Electronics'},
 ];
 
 const shopCategories = [
@@ -29,16 +34,15 @@ const shopCategories = [
 
 export default function Home() {
   interface NearbyDeal {
-    [expiration_date: string]: string | number | Date;
     id: any;
     title: string;
-    // retailer_name?: string;
     price: number;
     original_price: number;
     distance: string;
     category: string;
-    // endsToday?: boolean;
-    // Add other properties as needed
+    image: string;
+    expiration_date: string | number | Date;
+    retailer_name: string;
   }
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -236,24 +240,25 @@ export default function Home() {
                   <View style={styles.heartButton}>
                     <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
                   </View>
-                  {/* Placeholder image - replace with your actual image handling */}
                   <Image
-                    source={require('../../assets/spa.png')}
+                    source={
+                      deal.image && typeof deal.image === 'string'? {uri: deal.image} : require('../../assets/spa.png')
+                    }
                     style={styles.spaDealImage}
-                  />
+                    />
                   <View style={styles.spaDealOverlay}>
-                    {calculateDiscount(0, 0) && (
+                    {calculateDiscount(deal.original_price, deal.price) && (
                       <Text style={styles.spaDealDiscount}>
-                        {calculateDiscount(0, 0)}
+                        {calculateDiscount(deal.original_price, deal.price)}
                       </Text>
                     )}
                   </View>
                   <View style={styles.spaDealInfo}>
                     <View style={styles.spaDealMeta}>
-                      {/* <View style={styles.spaDealMetaItem}>
+                      <View style={styles.spaDealMetaItem}>
                         <FontAwesome name="map-marker" size={12} color="#666" />
                         <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
-                      </View> */}
+                      </View>
                       {new Date(deal.expiration_date).getTime() > new Date().getTime() && (
                         <View style={styles.spaDealMetaItem}>
                           <FontAwesome name="clock-o" size={12} color="#666" />
@@ -263,13 +268,13 @@ export default function Home() {
                     </View>
                     <Text style={styles.spaDealTitle}>
                       {deal.title}
-                      {/* {deal.retailer_name && ` - ${deal.retailer_name}`} */}
+                      {deal.retailer_name}
                     </Text>
-                    {/* <Text style={styles.spaDealPrice}>
+                    <Text style={styles.spaDealPrice}>
                       ${deal.price} {deal.original_price > deal.price && (
                         <Text style={styles.originalPrice}>${deal.original_price}</Text>
                       )}
-                    </Text> */}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               </Link>

@@ -1,19 +1,47 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView ,Image, Platform, Alert, Modal} from 'react-native';
-import { useRouter, Link } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
+import { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Platform,
+  Alert,
+  Modal,
+} from "react-native";
+import { useRouter, Link } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { addDeal } from "@/api/deals/deals";
 
 export default function NewDeal() {
+  const categories = [
+    "Clothing",
+    "Groceries",
+    "Electronics",
+    "Beauty Products",
+    "Sports & Fitness",
+    "Home & Furniture",
+    "Toys & Baby products",
+    "Books & Stationery",
+  ];
+
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("Select Category");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState<undefined | number>(undefined);
+  const [originalPrice, setOriginalPrice] = useState<undefined | number>(
+    undefined
+  );
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [redemptionMethod, setRedemptionMethod] = useState("QR Code");
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
+  const [image, setImage] = useState<string>("");
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
 
@@ -42,31 +70,66 @@ export default function NewDeal() {
     });
 
     if (!result.canceled) {
-      setImages([...images, result.assets[0].uri]); // Add selected image
+      setImage(result.assets[0].uri); // Add selected image
     }
   };
 
   const handleAddDeal = async () => {
-    if (!title || !description || !expirationDate || !redemptionMethod || images.length === 0) {
-      Alert.alert("Error", "Please fill all required fields and upload at least one image.");
+    if (
+      !title ||
+      !description ||
+      !expirationDate ||
+      !redemptionMethod ||
+      !price ||
+      !originalPrice ||
+      !image
+    ) {
+      Alert.alert(
+        "Error",
+        "Please fill all required fields and upload at least one image."
+      );
       return;
     }
-  
-    const newDeal = {
-      title,
-      description,
-      images,
-      category: "General", // Provide a default category
-      expiration_date: expirationDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
-      redemption_instructions: redemptionMethod,
-      engagements: 0, // Set a default value
-      views: 0, // Set a default value
-    };
-  
-    console.log("Sending Deal Data:", newDeal);
-  
-    const response = await addDeal(newDeal);
-  
+
+    if (originalPrice < price) {
+      Alert.alert(
+        "Error",
+        "Original price must be greater than the deal price."
+      );
+      return;
+    }
+
+    const filename = image.split("/").pop();
+    const match = /\.(\w+)$/.exec(filename || "");
+    const ext = match ? `.${match[1]}` : ".jpg";
+    const mimeType = `image/${ext.substring(1)}`;
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append(
+      "expiration_date",
+      expirationDate.toISOString().split("T")[0]
+    );
+    formData.append("redemption_instructions", redemptionMethod);
+    formData.append("engagements", String(0));
+    formData.append("views", String(0));
+    formData.append("price", String(price));
+    formData.append("original_price", String(originalPrice));
+
+    // Append the image
+    formData.append(
+      "image",
+      {
+        uri: image,
+        name: filename || `dealimage${ext}`,
+        type: mimeType,
+      } as any
+    );
+
+    const response = await addDeal(formData);
+
     if (response.success) {
       Alert.alert("Success", "Deal added successfully");
       router.push("/dashboard");
@@ -74,11 +137,6 @@ export default function NewDeal() {
       Alert.alert("Error", response.message || "Failed to add deal");
     }
   };
-  
-  
-  
-
-
 
   return (
     <View style={styles.container}>
@@ -112,38 +170,42 @@ export default function NewDeal() {
               placeholder="Enter deal description"
               placeholderTextColor="#999"
               multiline
-              numberOfLines={4
-                
-              }
+              numberOfLines={4}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Upload Images</Text>
+            <Text style={styles.label}>Upload Image</Text>
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
               <FontAwesome name="cloud-upload" size={24} color="#999" />
-              <Text style={styles.uploadText}>Tap to upload(max 5 images)</Text>
+              <Text style={styles.uploadText}>Tap to upload</Text>
             </TouchableOpacity>
 
-            <View style={styles.imageContainer}>
-              {images.map((img, index) => (
-                <Image key={index} source={{ uri: img }} style={styles.uploadedImage} />
-              ))}
-            </View>
+            {image && (
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: image }} style={styles.uploadedImage} />
+              </View>
+            )}
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Expiration Date*</Text>
-            <TouchableOpacity style={styles.input}  onPress={openDatePicker}>
-              <Text style={styles.dateText}>{expirationDate.toDateString()}</Text>
+            <TouchableOpacity style={styles.input} onPress={openDatePicker}>
+              <Text style={styles.dateText}>
+                {expirationDate.toDateString()}
+              </Text>
               <FontAwesome name="calendar" size={20} color="#666" />
             </TouchableOpacity>
             {showDatePicker && (
-              <DateTimePicker value={expirationDate} mode="date" display="default" onChange={onDateChange} />
+              <DateTimePicker
+                value={expirationDate}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+              />
             )}
           </View>
 
-          
           <View style={styles.formGroup}>
             <Text style={styles.label}>Redemption Method*</Text>
             <TouchableOpacity
@@ -151,6 +213,57 @@ export default function NewDeal() {
               onPress={() => setShowDropdown(true)}
             >
               <Text style={styles.selectText}>{redemptionMethod}</Text>
+              <FontAwesome name="chevron-down" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Deal Price*</Text>
+            <TextInput
+              style={styles.input}
+              value={price !== undefined ? price.toString() : ""}
+              onChangeText={(text) => {
+                // Remove non-digit characters and parse to integer
+                const numericValue = parseInt(text.replace(/[^0-9]/g, ""), 10);
+                setPrice(isNaN(numericValue) ? undefined : numericValue);
+              }}
+              placeholder="Enter deal price"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              multiline={false}
+              numberOfLines={1}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Original Price</Text>
+            <TextInput
+              style={styles.input}
+              value={
+                originalPrice !== undefined ? originalPrice.toString() : ""
+              }
+              onChangeText={(text) => {
+                // Remove non-digit characters and parse to integer
+                const numericValue = parseInt(text.replace(/[^0-9]/g, ""), 10);
+                setOriginalPrice(
+                  isNaN(numericValue) ? undefined : numericValue
+                );
+              }}
+              placeholder="Enter original deal price"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              multiline={false}
+              numberOfLines={1}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Category*</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => setShowCategoryDropdown(true)}
+            >
+              <Text style={styles.selectText}>{category}</Text>
               <FontAwesome name="chevron-down" size={16} color="#666" />
             </TouchableOpacity>
           </View>
@@ -176,10 +289,61 @@ export default function NewDeal() {
                   style={styles.picker}
                   dropdownIconColor="#999"
                 >
-                  <Picker.Item label="QR Code" value="QR Code" style={styles.pickerItem} />
-                  <Picker.Item label="Coupon Code" value="Coupon Code" style={styles.pickerItem} />
-                  <Picker.Item label="Physical Voucher" value="Physical Voucher" style={styles.pickerItem} />
-                  <Picker.Item label="Online Redemption" value="Online Redemption" style={styles.pickerItem} />
+                  <Picker.Item
+                    label="QR Code"
+                    value="QR Code"
+                    style={styles.pickerItem}
+                  />
+                  <Picker.Item
+                    label="Coupon Code"
+                    value="Coupon Code"
+                    style={styles.pickerItem}
+                  />
+                  <Picker.Item
+                    label="Physical Voucher"
+                    value="Physical Voucher"
+                    style={styles.pickerItem}
+                  />
+                  <Picker.Item
+                    label="Online Redemption"
+                    value="Online Redemption"
+                    style={styles.pickerItem}
+                  />
+                </Picker>
+              </View>
+            </TouchableOpacity>
+          </Modal>
+
+          {/* Category Modal */}
+          <Modal
+            visible={showCategoryDropdown}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowCategoryDropdown(false)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              onPress={() => setShowCategoryDropdown(false)}
+              activeOpacity={1}
+            >
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={category}
+                  onValueChange={(itemValue) => {
+                    setCategory(itemValue);
+                    setShowCategoryDropdown(false);
+                  }}
+                  style={styles.picker}
+                  dropdownIconColor="#999"
+                >
+                  {categories.map((cat) => (
+                    <Picker.Item
+                      key={cat}
+                      label={cat}
+                      value={cat}
+                      style={styles.pickerItem}
+                    />
+                  ))}
                 </Picker>
               </View>
             </TouchableOpacity>
@@ -188,12 +352,11 @@ export default function NewDeal() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.submitButton}
           onPress={async () => {
-            const response=await handleAddDeal();
-              router.push('/dashboard')
-
+            const response = await handleAddDeal();
+            router.push("/dashboard");
           }}
         >
           <Text style={styles.submitButtonText}>Submit Deal</Text>
@@ -222,10 +385,13 @@ export default function NewDeal() {
           </TouchableOpacity>
         </Link>
 
-        <Link href={{
+        <Link
+          href={{
             pathname: "/profile",
             params: { role: "users" }, // add your props here
-          }}  asChild>
+          }}
+          asChild
+        >
           <TouchableOpacity style={styles.navItem}>
             <FontAwesome name="user" size={24} color="#666" />
             <Text style={styles.navText}>Profile</Text>
@@ -239,20 +405,20 @@ export default function NewDeal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 20,
     paddingTop: 60,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerRight: {
     width: 24,
@@ -268,38 +434,38 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   textArea: {
     height: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   uploadButton: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 20,
-    alignItems: 'center',
-    borderStyle: 'dashed',
+    alignItems: "center",
+    borderStyle: "dashed",
   },
   uploadText: {
-    color: '#666',
+    color: "#666",
     marginTop: 10,
   },
   imageContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginTop: 10,
   },
   pickerItem: {
@@ -314,57 +480,57 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   dateText: {
-    color: '#666',
+    color: "#666",
   },
   selectText: {
-    color: '#666',
+    color: "#666",
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
   },
   submitButton: {
-    backgroundColor: '#FF4B55',
+    backgroundColor: "#FF4B55",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   submitButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
   },
   navItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   pickerContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     padding: 20,
-    width: '80%',
+    width: "80%",
   },
   picker: {
     height: 50,
-    width: '100%',
+    width: "100%",
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   navText: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
 });

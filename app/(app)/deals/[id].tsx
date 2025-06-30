@@ -5,20 +5,18 @@ import { FontAwesome } from '@expo/vector-icons';
 import { getDealsById } from '@/api/deals/deals'; // Make sure to import the function
 
 export default function DealDetails() {
-  const { id } = useLocalSearchParams();  // Get the deal id from the URL parameters
+  const { id } = useLocalSearchParams(); 
   const router = useRouter();
-
-  const [deal, setDeal] = useState(null);  // State to store the fetched deal
+  const [deal, setDeal] = useState<any>(null);  // State to store the fetched deal
   const [loading, setLoading] = useState(true);  // Loading state for fetching data
 
   useEffect(() => {
     const fetchDealDetails = async () => {
       setLoading(true);  // Set loading to true while fetching data
       const response = await getDealsById(Array.isArray(id) ? id[0] : id);  // Ensure id is a string
-        console.log("API Response:", response); // Debugging
         
       if (response.success) {
-        setDeal(response.data);  // Set the deal data in the state
+        setDeal(response.data.deal);  // Set the deal data in the state
       } else {
         Alert.alert('Error', response.message || 'Failed to load deal details');
       }
@@ -60,10 +58,16 @@ export default function DealDetails() {
           </TouchableOpacity>
         </View>
 
-        <Image
-          source={{ uri: deal.image || 'https://via.placeholder.com/400x300' }}  // Use a placeholder if image is missing
-          style={styles.image}
-        />
+         <Image
+        source={
+          deal.image
+            ? typeof deal.image === "string"
+              ? { uri: deal.image }
+              : require('../../../assets/spa.png')
+            : require('../../../assets/spa.png')
+        }
+        style={styles.image}
+      />
 
         <View style={styles.content}>
           <Text style={styles.title}>{deal.title}</Text>
@@ -73,7 +77,7 @@ export default function DealDetails() {
             <Text style={styles.originalPrice}>₹{deal.original_price}</Text>
           </View>
 
-          <Text style={styles.validUntil}>Valid until: {new Date(deal.expires_at).toLocaleDateString()}</Text>
+          <Text style={styles.validUntil}>Valid until: {new Date(deal.expiration_date).toLocaleDateString()}</Text>
 
           <Text style={styles.description}>{deal.description}</Text>
 
@@ -106,7 +110,7 @@ export default function DealDetails() {
             </View>
             <View style={styles.bulletPoint}>
               <Text style={styles.bullet}>•</Text>
-              <Text style={styles.bulletText}>Valid until {new Date(deal.expires_at).toLocaleDateString()}</Text>
+              <Text style={styles.bulletText}>Valid until {new Date(deal.expiration_date).toLocaleDateString()}</Text>
             </View>
             <View style={styles.bulletPoint}>
               <Text style={styles.bullet}>•</Text>

@@ -8,16 +8,7 @@ const API_URL = `${process.env.EXPO_PUBLIC_BACKEND_API_URL}/api/deals`; // chang
  * @param deal - Object containing deal details
  * @returns API response
  */
-export const addDeal = async (deal: {
-  title: string;
-  description: string;
-  images: string[];
-  category: string;
-  expiration_date: string;
-  redemption_instructions: string;
-  engagements: number;
-  views: number;
-}) => {
+export const addDeal = async (deal: FormData) => {
   try {
     const token = await AsyncStorage.getItem("token");
 
@@ -26,11 +17,17 @@ export const addDeal = async (deal: {
     }
 
     const response = await axios.post(`${API_URL}/add`, deal, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+    },
+     
     });
+    console.log(response)
 
     return { success: true, deal: response.data };
   } catch (error: any) {
+    console.log(error)
     return { success: false, message: error.response?.data?.error || "Failed to add deal" };
   }
 };
@@ -67,16 +64,7 @@ export const fetchNearbyDeals = async ({ latitude, longitude }: { latitude: numb
 
 export const editDeal = async (
   dealId: string, // Add dealId as a parameter
-  deal: {
-    title: string;
-    description: string;
-    images: string[];
-    category: string;
-    expiration_date: string;
-    redemption_instructions: string;
-    engagements: number;
-    views: number;
-  }
+  deal: FormData
 ) => {
   try {
     const token = await AsyncStorage.getItem("token");
@@ -86,7 +74,10 @@ export const editDeal = async (
     }
 
     const response = await axios.put(`${API_URL}/edit/${dealId}`, deal, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, 
+      "Content-Type": "multipart/form-data",
+    },
+        
     });
 
     return { success: true, deal: response.data };
@@ -164,6 +155,7 @@ export const getDealsById = async (dealId: string) => {
 
     return { success: true, data: response.data };
   } catch (error: any) {
+    console.log(error)
     return { success: false, message: error.response?.data?.error || "Failed to fetch analytics data" };
   }
 };

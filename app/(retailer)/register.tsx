@@ -14,6 +14,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerRetailer, registerRetailerFromGoogle } from "@/api/retailer/retailer";
+import { checkIfLoggedIn } from "@/api/profile";
 
 interface GoogleUser {
   name: string,
@@ -40,6 +41,16 @@ export default function RetailerRegister() {
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     scopes: ["profile", "email"],
   });
+
+useEffect(()=>{
+    const checkLoginStatus = async () => {
+      const { success, token, userID } = await checkIfLoggedIn("retailerId");
+      if (success && token && userID) {
+        router.push("/(retailer)/dashboard");
+      }
+    };
+    checkLoginStatus(); 
+  }, [])
 
   useEffect(() => {
     if (response?.type === "success") {

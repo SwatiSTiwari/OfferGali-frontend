@@ -13,13 +13,16 @@ export const getProfile = async (role: string) => {
 
     const response = await axios.get(`${API_URL}/get`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { table: role }, 
+      params: { table: role },
     });
 
     return { success: true, data: response.data };
   } catch (error: any) {
-    console.log(error)
-    return { success: false, message: error.response?.data?.message || "Failed to fetch profile" };
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to fetch profile",
+    };
   }
 };
 
@@ -36,10 +39,13 @@ export const updateProfile = async (updatedData: any) => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    return { success: true,  message: "Profile updated successfully" };
+    return { success: true, message: "Profile updated successfully" };
   } catch (error: any) {
-    console.log(error)
-    return { success: false, message: error.response?.data?.message || "Failed to update profile" };
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update profile",
+    };
   }
 };
 
@@ -51,17 +57,28 @@ export const updateProfileImage = async (updatedDataForm: any) => {
       return { success: false, message: "No token found" };
     }
 
-     const response = await axios.put(`${API_URL}/profileimageupdate`, updatedDataForm, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axios.put(
+      `${API_URL}/profileimageupdate`,
+      updatedDataForm,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
-    return { success: true, message: response.data.message || "Profile image updated successfully" , image: response.data.image};
+    return {
+      success: true,
+      message: response.data.message || "Profile image updated successfully",
+      image: response.data.image,
+    };
   } catch (error: any) {
-    console.log(error)
-    return { success: false, message: error.response?.data?.message || "Failed to update profile" };
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update profile",
+    };
   }
 };
 
@@ -73,17 +90,23 @@ export const deleteProfileImage = async (role: string) => {
       return { success: false, message: "No token found" };
     }
 
-     const response = await axios.delete(`${API_URL}/profileimagedelete`, {
+    const response = await axios.delete(`${API_URL}/profileimagedelete`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      params: { table: role }, 
+      params: { table: role },
     });
 
-    return { success: true, message: response.data.message || "Profile image deleted successfully"};
+    return {
+      success: true,
+      message: response.data.message || "Profile image deleted successfully",
+    };
   } catch (error: any) {
-    console.log(error)
-    return { success: false, message: error.response?.data?.message || "Failed to update image" };
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update image",
+    };
   }
 };
 
@@ -97,13 +120,30 @@ export const deleteProfile = async (role: string) => {
 
     const response = await axios.delete(`${API_URL}/deleteuser`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { table: role }, 
+      params: { table: role },
     });
 
-    return { success: true, data: response.data, message: "Profile Deleted successfully" };
+    return {
+      success: true,
+      data: response.data,
+      message: "Profile Deleted successfully",
+    };
   } catch (error: any) {
-    console.log(error)
-    return { success: false, message: error.response?.data?.message || "Failed to update profile" };
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update profile",
+    };
   }
 };
 
+export const checkIfLoggedIn = async (userType: string) => {
+    const token = await AsyncStorage.getItem("token");
+    const userID = await AsyncStorage.getItem(userType);
+    if (token && userID) {
+      return { success: true, token, userID };
+    }else{
+      return { success: false, message: "Not logged in" };  
+
+    }
+};

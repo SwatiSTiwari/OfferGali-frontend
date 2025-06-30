@@ -37,6 +37,8 @@ export const registerUser = async (
 
     // Store token for authentication
     await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("userId", user.id.toString());
+
 
     return { success: true, user };
   } catch (error: any) {

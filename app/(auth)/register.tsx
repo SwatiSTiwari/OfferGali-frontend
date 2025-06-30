@@ -12,6 +12,7 @@ import {
 import { Link, useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import { registerUser, registerUserFromGoogle } from "@/api/user/user";
+import { checkIfLoggedIn } from "@/api/profile";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -31,6 +32,16 @@ export default function RegisterUser() {
   });
   const router = useRouter();
   const logo = require("../../assets/logo.png");
+
+  useEffect(()=>{
+    const checkLoginStatus = async () => {
+      const { success, token, userID } = await checkIfLoggedIn("userId");
+      if (success && token && userID) {
+        router.push("/(app)/home");
+      }
+    };
+    checkLoginStatus(); 
+  }, [])
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,

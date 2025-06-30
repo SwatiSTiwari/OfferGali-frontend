@@ -36,7 +36,6 @@ export default function RetailerDashboard() {
     const fetchRetailerId = async () => {
       try {
         const id = await AsyncStorage.getItem("retailer_id");
-        console.log("Retrieved Retailer ID:", id); // Debugging
 
         if (id) {
           setRetailerId(parseInt(id));
@@ -61,7 +60,6 @@ export default function RetailerDashboard() {
       setLoading(true);
       try {
         const response = await getAllDeals();
-        console.log("API Response:", response); // Debugging
 
         if (response.success) {
           // Fix: Access the correct array inside `response.deals`
@@ -78,7 +76,6 @@ export default function RetailerDashboard() {
   }
 );
 
-          console.log("Filtered Deals:", filteredDeals); // Debugging
           setDeals(filteredDeals);
         } else {
           Alert.alert("Error", response.message || "Failed to fetch deals");

@@ -24,6 +24,7 @@ import {
 } from "@/api/profile";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Profile() {
    const params = useLocalSearchParams();
@@ -168,6 +169,21 @@ if (status !== 'granted') {
     }
   };
 
+   const handleLogout = async () => {
+      try {
+        await AsyncStorage.removeItem("token");
+        if(role)
+        await AsyncStorage.removeItem("retailerId");
+        else
+        await AsyncStorage.removeItem("userId");
+        Alert.alert("Success", "Logged out successfully.");
+        router.push("/");
+      } catch (error) {
+        console.error("Logout Error:", error);
+        Alert.alert("Error", "Failed to log out. Please try again later.");
+      }
+    }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -308,6 +324,14 @@ if (status !== 'granted') {
         >
           <Feather name="trash-2" size={20} color="#FF4B55" />
           <Text style={styles.deleteButtonText}>Delete Account</Text>
+        </TouchableOpacity>
+
+         <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleLogout}
+        >
+          <Feather name="log-out" size={20} color="#FF4B55" />
+          <Text style={styles.deleteButtonText}>Log Out of Account</Text>
         </TouchableOpacity>
       </ScrollView>
 
