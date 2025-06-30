@@ -2,8 +2,7 @@ import React from "react"
 import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet } from "react-native"
 import { Ionicons, Feather } from "@expo/vector-icons"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { Link } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
+import BottomNavUser from "../(auth)/bottomnavuser";
 
 interface DealProps {
   title: string
@@ -14,6 +13,7 @@ interface DealProps {
 }
 
 const DealCard = ({ title, validUntil, currentPrice, originalPrice, isFavorite = true }: DealProps) => (
+
   <TouchableOpacity style={styles.dealCard}>
     <View style={styles.dealImageContainer}>
       <View style={styles.dealImage} />
@@ -35,6 +35,8 @@ const DealCard = ({ title, validUntil, currentPrice, originalPrice, isFavorite =
 )
 
 export default function SavedDeals() {
+  console.log("Rendering Saved");
+
   const deals = [
     {
       title: "Spa Day Package",
@@ -79,35 +81,7 @@ export default function SavedDeals() {
         ))}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-      <Link href="/home" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="home" size={24} color="#FF4B55" />
-            <Text style={[styles.navText, styles.activeNavText]}>Home</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/saved" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="compass" size={24} color="#666" />
-            <Text style={styles.navText}>Explore</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/saved" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="heart" size={24} color="#666" />
-            <Text style={styles.navText}>Saved</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href={{
-            pathname: "/profile",
-            params: { role: "users" }, // add your props here
-          }}   asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="user" size={24} color="#666" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+      <BottomNavUser></BottomNavUser>
     </SafeAreaView>
   )
 }

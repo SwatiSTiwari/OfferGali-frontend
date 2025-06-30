@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { fetchNearbyDeals } from '@/api/deals/deals';
+import BottomNavUser from '@/app/(auth)/bottomnavuser';
 
 const categories = [
   { id: 1, name: 'All Deals'},
@@ -33,6 +34,8 @@ const shopCategories = [
 ];
 
 export default function Home() {
+console.log("Render Home");
+
   interface NearbyDeal {
     id: any;
     title: string;
@@ -181,7 +184,7 @@ export default function Home() {
           <Text style={styles.headerTitle}>Nearby Deals</Text>
         </View>
         <Link href="/(app)/notifications" asChild>
-          <TouchableOpacity style={styles.navItem}>
+          <TouchableOpacity style={{alignItems: 'center'}}>
             <FontAwesome name="bell" size={24} color="#666" />
           </TouchableOpacity>
         </Link>
@@ -315,35 +318,7 @@ export default function Home() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        <Link href="/home" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="home" size={24} color="#FF6B6B" />
-            <Text style={[styles.navText, { color: "#FF6B6B" }]}>Home</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/(app)/settings/geofencing" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="compass" size={24} color="#666" />
-            <Text style={styles.navText}>Explore</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/saved" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="heart" size={24} color="#666" />
-            <Text style={styles.navText}>Saved</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link  href={{
-            pathname: "/profile",
-            params: { role: "users" }, // add your props here
-          }} asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="user" size={24} color="#666" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+      <BottomNavUser></BottomNavUser>
     </View>
   );
 }
@@ -580,24 +555,5 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: '500',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 12,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  navItem: {
-    alignItems: 'center',
-  },
-  navText: {
-    fontSize: 12,
-    marginTop: 4,
-    color: '#666',
-  },
-  navTextActive: {
-    color: '#FF6B6B',
-  },
+  }
 });

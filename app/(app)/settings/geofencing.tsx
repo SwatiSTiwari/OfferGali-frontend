@@ -6,8 +6,12 @@ import MapView, { Circle } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location'; // Import Location
 import Constants from 'expo-constants';
+import BottomNavUser from '@/app/(auth)/bottomnavuser';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 export default function GeofencingSetup() {
+  console.log("Rendering Geofencing");
+
   const router = useRouter();
   const [isEnabled, setIsEnabled] = useState(false);
   const [radius, setRadius] = useState(2.8); // miles
@@ -22,7 +26,7 @@ export default function GeofencingSetup() {
   console.log('Google Maps API Key:');
 
   useEffect(() => {
-    (async () => {
+    const getPermission = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'Location permission is required to use this feature.');
@@ -36,7 +40,8 @@ export default function GeofencingSetup() {
         latitudeDelta: 0.01, // Adjust for a closer view
         longitudeDelta: 0.01, // Adjust for a closer view
       });
-    })();
+    };
+    getPermission();
   }, []);
 
   if (!currentLocation) {
@@ -49,6 +54,8 @@ export default function GeofencingSetup() {
 
   return (
     <View style={styles.container}>
+
+  
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <FontAwesome name="arrow-left" size={24} color="#333" />
@@ -115,6 +122,8 @@ export default function GeofencingSetup() {
       <TouchableOpacity style={styles.saveButton} onPress={() => router.back()}>
         <Text style={styles.saveButtonText}>Save Settings</Text>
       </TouchableOpacity>
+
+      <BottomNavUser></BottomNavUser>
     </View>
   );
 }

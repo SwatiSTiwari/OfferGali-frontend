@@ -56,8 +56,6 @@ export const fetchNotifications = async (): Promise<NotificationResponse> => {
       timeout: 10000 // 10 second timeout
     });
 
-    console.log('Notification response:', response.data);
-
     // Your backend returns { success: true, data: { notifications: [...] }, message: "..." }
     if (response.data.success) {
       return {

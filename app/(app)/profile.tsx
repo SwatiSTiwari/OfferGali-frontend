@@ -25,6 +25,8 @@ import {
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import BottomNavUser from "../(auth)/bottomnavuser";
+import BottomRetailerNav from "../(retailer)/BottomRetailerNav";
 
 export default function Profile() {
    const params = useLocalSearchParams();
@@ -40,6 +42,8 @@ export default function Profile() {
     emailEdit: true,
     profileUpdateAt: Date.now(),
   });
+  console.log("Rendering Profile", user.email, params);
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -336,35 +340,9 @@ if (status !== 'granted') {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <Link href="/home" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="home" size={24} color="#666" />
-            <Text style={styles.navText}>Home</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/analytics" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="bar-chart" size={24} color="#666" />
-            <Text style={styles.navText}>Analytics</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/dashboard" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="tag" size={24} color="#666" />
-            <Text style={styles.navText}>Deal</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/profile" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="user" size={24} color="#FF4855" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+      {role === "users" ? (<BottomNavUser></BottomNavUser>):
+      <BottomRetailerNav></BottomRetailerNav>
+}
     </SafeAreaView>
   );
 }
