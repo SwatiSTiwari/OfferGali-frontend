@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "121236076552",
+    "project_id": "offergali-8a213",
+    "storage_bucket": "offergali-8a213.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:121236076552:android:01c95f3a3f68f96adcf9bd",
+        "android_client_info": {
+          "package_name": "com.offergali.offergalifrontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA84MJB0HXoiqtT227dq2p4pfVy90lLxvU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
