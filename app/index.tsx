@@ -2,36 +2,98 @@ import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from "expo-web-browser"
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 WebBrowser.maybeCompleteAuthSession()
 
 export default function OnboardingScreen() {
-  const logo = require('../assets/logo.png');
+  const [backendStatus, setBackendStatus] = useState<string>('checking');
+  const [imageError, setImageError] = useState<boolean>(false);
+  const [renderError, setRenderError] = useState<boolean>(false);
+
+  // Safely require assets with error handling
+  let logo, mainImage;
+  try {
+    logo = require('../assets/logo.png');
+    mainImage = require('../assets/s.png');
+  } catch (error) {
+    console.log('Asset loading error:', error);
+    setRenderError(true);
+  }
 
   useEffect(() => {
     const checkBackendConnection = async () => {
       try {
-        const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_API_URL}/`);
+        // Check if backend URL is available
+        const backendUrl = process.env.EXPO_PUBLIC_BACKEND_API_URL;
+        if (!backendUrl) {
+          console.log('Backend URL not configured');
+          setBackendStatus('not_configured');
+          return;
+        }
+
+        // Add timeout to prevent hanging
+        const axiosConfig = {
+          timeout: 5000,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        };
+
+        const response = await axios.get(`${backendUrl}/`, axiosConfig);
 
         if (response.status === 200 && response.data?.message) {
           console.log('Backend Connected', response.data.message);
-        } 
+          setBackendStatus('connected');
+        } else {
+          console.log('Backend responded but with unexpected data');
+          setBackendStatus('connected');
+        }
       } catch (error: any) {
-        console.log('Backend Not Reachable', error.message || 'Could not connect to backend.');
-        console.log('Backend Error', 'Unexpected response from backend.');
-        console.log('Possibility->', 'The IP of your device is incorrect please check it and update');
+        console.log('Backend connection failed:', error.message || 'Unknown error');
+        setBackendStatus('disconnected');
+        
+        // Only log detailed error in development
+        if (__DEV__) {
+          console.log('Error details:', error);
+        }
       }
     };
-    checkBackendConnection();
+
+    // Use a small delay to prevent immediate crash on app start
+    const timer = setTimeout(() => {
+      checkBackendConnection();
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
+
+  // Error fallback component
+  if (renderError) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>⚠️</Text>
+          <Text style={styles.errorMessage}>Something went wrong</Text>
+          <Text style={styles.errorSubMessage}>Please restart the app</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.logoContainer}>
-          <Image source={logo} style={styles.logo} />
+          {logo ? (
+            <Image source={logo} style={styles.logo} />
+          ) : (
+            <View style={[styles.logo, { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }]}>
+              <Text style={{ fontSize: 20 }}>🏪</Text>
+            </View>
+          )}
           <Text style={styles.logoText}>
             <Text style={styles.orangeText}>OfferGali</Text>
           </Text>
@@ -40,11 +102,23 @@ export default function OnboardingScreen() {
       </View>
 
       <View style={styles.imageContainer}>
-        <Image
-          source={require('../assets/s.png')} // Replace with your shopping/deals illustration
-          style={styles.mainImage}
-          contentFit="contain"
-        />
+        {!imageError ? (
+          <Image
+            source={mainImage}
+            style={styles.mainImage}
+            contentFit="contain"
+            placeholder="Loading..."
+            onError={(error) => {
+              console.log('Image loading error:', error);
+              setImageError(true);
+            }}
+          />
+        ) : (
+          <View style={[styles.mainImage, styles.imageFallback]}>
+            <Text style={styles.fallbackText}>📱</Text>
+            <Text style={styles.fallbackSubText}>Image not available</Text>
+          </View>
+        )}
       </View>
 
       {/* Buttons Side by Side */}
@@ -57,6 +131,13 @@ export default function OnboardingScreen() {
           <Text style={styles.button}>Get Started as Retailer</Text>
         </Link>
       </View>
+
+      {/* Debug info - remove in production */}
+      {__DEV__ && (
+        <View style={styles.debugContainer}>
+          <Text style={styles.debugText}>Backend: {backendStatus}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -116,11 +197,58 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6F61',
     color: 'white',
     fontWeight: 'bold',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    borderRadius: 20,
     textAlign: 'center',
-    width: 180, // Adjusted for better spacing
+    width: 150, // Made smaller
+  },
+  debugContainer: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    padding: 5,
+    borderRadius: 5,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  imageFallback: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  fallbackText: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  fallbackSubText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorMessage: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF6F61',
+    marginBottom: 8,
+  },
+  errorSubMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
 });
