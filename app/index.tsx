@@ -1,14 +1,32 @@
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from "expo-web-browser"
 import { useEffect } from 'react';
 import axios from 'axios';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true, // Show banner
+    shouldPlaySound: true, // Play sound
+    shouldSetBadge: false,
+  }),
+});
 
 WebBrowser.maybeCompleteAuthSession()
 
 export default function OnboardingScreen() {
   const logo = require('../assets/logo.png');
+
+useEffect(() => {
+  const subscription = Notifications.addNotificationReceivedListener(notification => {
+    // Handle notification received in foreground
+    console.log('Notification received');
+  });
+
+  return () => subscription.remove();
+}, []);
 
   useEffect(() => {
     const checkBackendConnection = async () => {

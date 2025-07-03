@@ -18,7 +18,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { getAllDeals, editDeal } from "@/api/deals/deals";
 import { useRoute } from "@react-navigation/native";
-import { Link } from "expo-router";
+import BottomRetailerNav from "../BottomRetailerNav";
+
 
 const categories = [
   "Clothing",
@@ -298,6 +299,15 @@ export default function EditDeal() {
             </TouchableOpacity>
           </View>
 
+           <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleUpdateDeal}
+        >
+          <Text style={styles.submitButtonText}>Update Deal</Text>
+        </TouchableOpacity>
+      </View>
+
           {/* Dropdown Modal */}
           <Modal
             visible={showDropdown}
@@ -379,52 +389,10 @@ export default function EditDeal() {
             </TouchableOpacity>
           </Modal>
         </View>
+
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleUpdateDeal}
-        >
-          <Text style={styles.submitButtonText}>Update Deal</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.bottomNav}>
-        <Link href="/home" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="home" size={24} color="#666" />
-            <Text style={styles.navText}>Home</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/analytics" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="bar-chart" size={24} color="#666" />
-            <Text style={styles.navText}>Analytics</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/dashboard" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="tag" size={24} color="#666" />
-            <Text style={styles.navText}>Deal</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link
-          href={{
-            pathname: "/profile",
-            params: { role: "users" }, // add your props here
-          }}
-          asChild
-        >
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="user" size={24} color="#666" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+      <BottomRetailerNav></BottomRetailerNav>
     </View>
   );
 }
@@ -452,6 +420,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginBottom: 76, // Space for bottom navigation
   },
   form: {
     padding: 20,

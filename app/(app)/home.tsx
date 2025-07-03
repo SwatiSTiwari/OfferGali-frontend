@@ -5,6 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { fetchNearbyDeals } from '@/api/deals/deals';
 import BottomNavUser from '@/app/(auth)/bottomnavuser';
+import { registerForPushNotificationsAsync } from '@/utils/notifications';
 
 const categories = [
   { id: 1, name: 'All Deals'},
@@ -34,7 +35,9 @@ const shopCategories = [
 ];
 
 export default function Home() {
-console.log("Render Home");
+ useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
 
   interface NearbyDeal {
     id: any;

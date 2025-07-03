@@ -30,17 +30,17 @@ export default function RetailerLogin() {
   });
 
   // Clear AsyncStorage only ONCE when app starts
-  useEffect(() => {
-    const clearStorage = async () => {
-      try {
-        await AsyncStorage.clear();
-        console.log("AsyncStorage cleared on app start!");
-      } catch (error) {
-        console.error("Error clearing AsyncStorage:", error);
-      }
-    };
-    clearStorage();
-  }, []);
+  // useEffect(() => {
+  //   const clearStorage = async () => {
+  //     try {
+  //       await AsyncStorage.clear();
+  //       console.log("AsyncStorage cleared on app start!");
+  //     } catch (error) {
+  //       console.error("Error clearing AsyncStorage:", error);
+  //     }
+  //   };
+  //   clearStorage();
+  // }, []);
 
   // Handle Google OAuth response
   useEffect(() => {
@@ -74,7 +74,6 @@ export default function RetailerLogin() {
 
       if (response?.success) {
         Alert.alert("Success", "Login successful via Google!");
-        console.log("Navigating to Dashboard...");
 
         // Store token in AsyncStorage
         if (response.token) {
@@ -131,7 +130,6 @@ export default function RetailerLogin() {
 
       if (response?.success) {
         Alert.alert("Success", "Login successful");
-        console.log("Navigating to Dashboard...");
 
         // Store token in AsyncStorage
         if (response.token) {

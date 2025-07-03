@@ -23,8 +23,6 @@ export const addDeal = async (deal: FormData) => {
     },
      
     });
-    console.log(response)
-
     return { success: true, deal: response.data };
   } catch (error: any) {
     console.log(error)
@@ -99,8 +97,6 @@ export const getAllDeals = async () => {
       console.error("No token found in AsyncStorage");
       return { success: false, message: "Unauthorized. No token found", deals: [] };
     }
-
-    console.log("Fetching Deals...");
 
     const response = await axios.get(`${API_URL}/all`, {
       headers: { Authorization: `Bearer ${token}` },

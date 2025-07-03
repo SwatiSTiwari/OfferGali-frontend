@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import MapView, { Circle } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location'; // Import Location
-import Constants from 'expo-constants';
 import BottomNavUser from '@/app/(auth)/bottomnavuser';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 export default function GeofencingSetup() {
-  console.log("Rendering Geofencing");
-
   const router = useRouter();
   const [isEnabled, setIsEnabled] = useState(false);
   const [radius, setRadius] = useState(2.8); // miles
@@ -54,7 +50,6 @@ export default function GeofencingSetup() {
 
   return (
     <View style={styles.container}>
-
   
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -64,6 +59,7 @@ export default function GeofencingSetup() {
         <View style={styles.headerRight} />
       </View>
 
+    <ScrollView>
       <View style={styles.mapContainer}>
         <MapView style={styles.map} initialRegion={currentLocation}>
           {isEnabled && (
@@ -122,6 +118,7 @@ export default function GeofencingSetup() {
       <TouchableOpacity style={styles.saveButton} onPress={() => router.back()}>
         <Text style={styles.saveButtonText}>Save Settings</Text>
       </TouchableOpacity>
+      </ScrollView>
 
       <BottomNavUser></BottomNavUser>
     </View>

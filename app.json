@@ -24,12 +24,12 @@
         "projectId": "84900348-0074-43ee-90ef-d121367b72d9"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },    "updates": {
+    "runtimeVersion": "1.0.0",
+    "updates": {
       "url": "https://u.expo.dev/84900348-0074-43ee-90ef-d121367b72d9"
     },
-    "owner": "offergali",    "plugins": [
+    "owner": "offergali",    
+    "plugins": [
       "@react-native-google-signin/google-signin",
       "expo-location"
     ],
@@ -39,7 +39,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyBjUrzMJfqDRc5M7wIo-4uYSrNditAKRxw"
         }
-      }
+      },
+       "googleServicesFile": "./android/app/google-services.json"
     },
     "ios": {
       "config": {

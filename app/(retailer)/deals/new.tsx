@@ -17,6 +17,8 @@ import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { addDeal } from "@/api/deals/deals";
+import BottomRetailerNav from "../BottomRetailerNav";
+
 
 export default function NewDeal() {
   const categories = [
@@ -129,7 +131,6 @@ export default function NewDeal() {
     );
 
     const response = await addDeal(formData);
-
     if (response.success) {
       Alert.alert("Success", "Deal added successfully");
       router.push("/dashboard");
@@ -268,6 +269,19 @@ export default function NewDeal() {
             </TouchableOpacity>
           </View>
 
+          <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={async () => {
+            const response = await handleAddDeal();
+            router.push("/dashboard");
+          }}
+        >
+          <Text style={styles.submitButtonText}>Submit Deal</Text>
+        </TouchableOpacity>
+      </View>
+
+
           {/* Dropdown Modal */}
           <Modal
             visible={showDropdown}
@@ -350,54 +364,7 @@ export default function NewDeal() {
           </Modal>
         </View>
       </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={async () => {
-            const response = await handleAddDeal();
-            router.push("/dashboard");
-          }}
-        >
-          <Text style={styles.submitButtonText}>Submit Deal</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.bottomNav}>
-        <Link href="/home" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="home" size={24} color="#666" />
-            <Text style={styles.navText}>Home</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/analytics" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="bar-chart" size={24} color="#666" />
-            <Text style={styles.navText}>Analytics</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/dashboard" asChild>
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="tag" size={24} color="#666" />
-            <Text style={styles.navText}>Deal</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link
-          href={{
-            pathname: "/profile",
-            params: { role: "users" }, // add your props here
-          }}
-          asChild
-        >
-          <TouchableOpacity style={styles.navItem}>
-            <FontAwesome name="user" size={24} color="#666" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
+      <BottomRetailerNav></BottomRetailerNav>
     </View>
   );
 }
@@ -425,6 +392,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginBottom: 76, // Space for bottom navigation
   },
   form: {
     padding: 20,

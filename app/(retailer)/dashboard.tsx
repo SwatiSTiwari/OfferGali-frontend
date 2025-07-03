@@ -64,21 +64,21 @@ export default function RetailerDashboard() {
 
         if (response.success) {
           // Fix: Access the correct array inside `response.deals`
-          const filteredDeals = response.deals.deals.filter(
-  (deal: Deal) => {
-    const today = new Date();
-    const expirationDate = new Date(deal.expiration_date);
-    
-    // Set both dates to start of day for comparison
-    today.setHours(0, 0, 0, 0);
-    expirationDate.setHours(0, 0, 0, 0);
-    
-    return deal.retailer_id === retailerId && expirationDate >= today;
-  }
-);
+          const filteredDeals = response.deals.deals.filter((deal: Deal) => {
+            const today = new Date();
+            const expirationDate = new Date(deal.expiration_date);
+
+            // Set both dates to start of day for comparison
+            today.setHours(0, 0, 0, 0);
+            expirationDate.setHours(0, 0, 0, 0);
+
+            return deal.retailer_id === retailerId && expirationDate >= today;
+          });
 
           setDeals(filteredDeals);
         } else {
+          console.log("alfiya")
+          console.log(response)
           Alert.alert("Error", response.message || "Failed to fetch deals");
         }
       } catch (error) {
@@ -121,7 +121,7 @@ export default function RetailerDashboard() {
                 <Text style={styles.addButtonText}>+ Add Deal</Text>
               </TouchableOpacity>
             </View>
-
+            
             <Text style={styles.sectionTitle}>Active Deals</Text>
 
             {deals.length > 0 ? (
@@ -165,7 +165,6 @@ export default function RetailerDashboard() {
 
       {/* Bottom Navigation */}
       <BottomRetailerNav></BottomRetailerNav>
-      
     </SafeAreaView>
   );
 }
@@ -183,7 +182,7 @@ const styles = StyleSheet.create({
   },
   headerContent: { flexDirection: "row", alignItems: "center", gap: 8 },
   headerTitle: { fontSize: 18, fontWeight: "600" },
-  content: { flex: 1 },
+  content: { flex: 1, marginBottom: 76 },
   actionButtons: { flexDirection: "row", padding: 16, gap: 12 },
   addButton: {
     flex: 1,
@@ -242,5 +241,5 @@ const styles = StyleSheet.create({
   },
   dealInfo: { color: "#666", fontSize: 14 },
   dealExpiry: { color: "#666", fontSize: 14 },
-  noDeals: { textAlign: "center", marginTop: 20, fontSize: 16, color: "#666" }
+  noDeals: { textAlign: "center", marginTop: 20, fontSize: 16, color: "#666" },
 });

@@ -45,6 +45,9 @@ export default function RetailerRegister() {
 useEffect(()=>{
     const checkLoginStatus = async () => {
       const { success, token, userID } = await checkIfLoggedIn("retailerId");
+      console.log(success)
+      console.log(token)
+      console.log(userID)
       if (success && token && userID) {
         router.push("/(retailer)/dashboard");
       }
