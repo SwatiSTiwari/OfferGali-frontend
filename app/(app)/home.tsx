@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { fetchNearbyDeals } from '@/api/deals/deals';
 import BottomNavUser from '@/app/(auth)/bottomnavuser';
 import { registerForPushNotificationsAsync } from '@/utils/notifications';
+import { useSavedDeals } from '@/contexts/SavedDealsContext';
 
 const categories = [
   { id: 1, name: 'All Deals'},
@@ -49,6 +50,8 @@ export default function Home() {
     image: string;
     expiration_date: string | number | Date;
     retailer_name: string;
+    description?: string;
+    retailer_id?: string;
   }
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,8 +61,34 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [filteredDeals, setFilteredDeals] = useState<NearbyDeal[]>([]);
+  const { saveDeals, isDealSaved } = useSavedDeals();
   
   const logo = require('../../assets/logo.png');
+
+  const handleSaveDeal = async (deal: NearbyDeal, event: any) => {
+    event.preventDefault(); // Prevent navigation when tapping save button
+    
+    try {
+      const savedDeal = {
+        id: deal.id.toString(),
+        title: deal.title,
+        description: deal.description || 'Great deal available!',
+        category: deal.category || 'General',
+        expiration_date: new Date(deal.expiration_date).toISOString(),
+        redemption_instructions: '',
+        retailer_id: deal.retailer_id || '',
+        price: deal.price.toString(),
+        original_price: deal.original_price.toString(),
+        image: deal.image,
+        savedAt: new Date().toISOString(),
+      };
+
+      await saveDeals(savedDeal);
+      Alert.alert('Success', 'Deal saved successfully!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save deal. Please try again.');
+    }
+  };
 
   const getNearbyDeals = async () => {
     // Get user's location
@@ -243,9 +272,16 @@ export default function Home() {
             {filteredDeals.map((deal) => (
               <Link href={`/deals/${deal.id}`} key={deal.id} asChild>
                 <TouchableOpacity style={styles.spaDealCard}>
-                  <View style={styles.heartButton}>
-                    <FontAwesome name="heart-o" size={20} color="#FF6B6B" />
-                  </View>
+                  <TouchableOpacity 
+                    style={styles.heartButton}
+                    onPress={(event) => handleSaveDeal(deal, event)}
+                  >
+                    <FontAwesome 
+                      name={isDealSaved(deal.id.toString()) ? "heart" : "heart-o"} 
+                      size={20} 
+                      color="#FF6B6B" 
+                    />
+                  </TouchableOpacity>
                   <Image
                     source={
                       deal.image && typeof deal.image === 'string'? {uri: deal.image} : require('../../assets/spa.png')

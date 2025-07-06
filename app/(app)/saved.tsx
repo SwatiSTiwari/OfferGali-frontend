@@ -1,62 +1,134 @@
 import React from "react"
-import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet } from "react-native"
+import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, Alert } from "react-native"
 import { Ionicons, Feather } from "@expo/vector-icons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import BottomNavUser from "../(auth)/bottomnavuser";
+import { useSavedDeals, SavedDeal } from "../../contexts/SavedDealsContext";
 
 interface DealProps {
-  title: string
-  validUntil: string
-  currentPrice: string
-  originalPrice: string
-  isFavorite?: boolean
+  deal: SavedDeal;
+  onRemove: (dealId: string) => void;
 }
 
-const DealCard = ({ title, validUntil, currentPrice, originalPrice, isFavorite = true }: DealProps) => (
+const DealCard = ({ deal, onRemove }: DealProps) => {
+  const formatExpiryDate = (expiryDate: string) => {
+    try {
+      const date = new Date(expiryDate);
+      const now = new Date();
+      const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      let expiryDateOnly;
+      if (expiryDate.includes('T')) {
+        const datePart = expiryDate.split('T')[0];
+        const parts = datePart.split('-');
+        if (parts.length === 3) {
+          const year = parseInt(parts[0]);
+          const month = parseInt(parts[1]) - 1;
+          const day = parseInt(parts[2]);
+          expiryDateOnly = new Date(year, month, day);
+        } else {
+          expiryDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+      } else {
+        expiryDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+      
+      if (isNaN(expiryDateOnly.getTime())) {
+        return `Valid until ${expiryDate}`;
+      }
+      
+      const diffTime = expiryDateOnly.getTime() - todayOnly.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) {
+        return "Expired";
+      } else if (diffDays === 0) {
+        return "Expires today";
+      } else if (diffDays === 1) {
+        return "Expires tomorrow";
+      } else {
+        return `Valid until ${expiryDateOnly.toLocaleDateString()}`;
+      }
+    } catch (error) {
+      return `Valid until ${expiryDate}`;
+    }
+  };
 
-  <TouchableOpacity style={styles.dealCard}>
-    <View style={styles.dealImageContainer}>
-      <View style={styles.dealImage} />
-    </View>
-    <View style={styles.dealContent}>
-      <View style={styles.dealHeader}>
-        <Text style={styles.dealTitle}>{title}</Text>
-        <TouchableOpacity>
-          <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={24} color={isFavorite ? "#FF4545" : "#000"} />
-        </TouchableOpacity>
+  const handleRemove = () => {
+    Alert.alert(
+      "Remove Deal",
+      "Are you sure you want to remove this deal from saved?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Remove", style: "destructive", onPress: () => onRemove(deal.id) }
+      ]
+    );
+  };
+
+  return (
+    <TouchableOpacity style={styles.dealCard}>
+      <View style={styles.dealImageContainer}>
+        <View style={styles.dealImage} />
       </View>
-      <Text style={styles.validUntil}>{validUntil}</Text>
-      <View style={styles.priceContainer}>
-        <Text style={styles.currentPrice}>{currentPrice}</Text>
-        <Text style={styles.originalPrice}>{originalPrice}</Text>
+      <View style={styles.dealContent}>
+        <View style={styles.dealHeader}>
+          <Text style={styles.dealTitle}>{deal.title}</Text>
+          <TouchableOpacity onPress={handleRemove}>
+            <Ionicons name="heart" size={24} color="#FF4545" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.validUntil}>{formatExpiryDate(deal.expiration_date)}</Text>
+        <Text style={styles.category}>🏷️ {deal.category}</Text>
+        <View style={styles.priceContainer}>
+          <Text style={styles.currentPrice}>
+            {deal.price ? `₹${deal.price}` : 'Price not available'}
+          </Text>
+          {deal.original_price && (
+            <Text style={styles.originalPrice}>₹{deal.original_price}</Text>
+          )}
+        </View>
+        <Text style={styles.savedAt}>
+          Saved on {new Date(deal.savedAt).toLocaleDateString()}
+        </Text>
       </View>
-    </View>
-  </TouchableOpacity>
-)
+    </TouchableOpacity>
+  );
+};
 
 export default function SavedDeals() {
   console.log("Rendering Saved");
+  const { savedDeals, removeDeal, clearAllDeals, loading } = useSavedDeals();
 
-  const deals = [
-    {
-      title: "Spa Day Package",
-      validUntil: "Valid until Apr 15, 2025",
-      currentPrice: "₹250",
-      originalPrice: "₹500",
-    },
-    {
-      title: "Spa Day Package",
-      validUntil: "Valid until Apr 15, 2025",
-      currentPrice: "₹250",
-      originalPrice: "₹500",
-    },
-    {
-      title: "Spa Day Package",
-      validUntil: "Valid until Apr 15, 2025",
-      currentPrice: "₹250",
-      originalPrice: "₹500",
-    },
-  ]
+  const handleClearAll = () => {
+    Alert.alert(
+      "Clear All Deals",
+      "Are you sure you want to remove all saved deals?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Clear All", style: "destructive", onPress: clearAllDeals }
+      ]
+    );
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity>
+            <Ionicons name="arrow-back" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Saved Deals</Text>
+          <TouchableOpacity>
+            <Feather name="more-vertical" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text>Loading saved deals...</Text>
+        </View>
+        <BottomNavUser />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -64,24 +136,36 @@ export default function SavedDeals() {
         <TouchableOpacity>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Deals</Text>
+        <Text style={styles.headerTitle}>Saved Deals ({savedDeals.length})</Text>
         <TouchableOpacity>
           <Feather name="more-vertical" size={24} color="#000" />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.clearButton}>
-        <Feather name="trash-2" size={20} color="#fff" style={styles.trashIcon} />
-        <Text style={styles.clearButtonText}>Clear Saved Deals</Text>
-      </TouchableOpacity>
+      {savedDeals.length > 0 && (
+        <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
+          <Feather name="trash-2" size={20} color="#fff" style={styles.trashIcon} />
+          <Text style={styles.clearButtonText}>Clear All Saved Deals</Text>
+        </TouchableOpacity>
+      )}
 
       <ScrollView style={styles.dealsContainer}>
-        {deals.map((deal, index) => (
-          <DealCard key={index} {...deal} />
-        ))}
+        {savedDeals.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="heart-outline" size={64} color="#ccc" />
+            <Text style={styles.emptyTitle}>No Saved Deals Yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Save deals you're interested in by tapping the "Save for Later" button
+            </Text>
+          </View>
+        ) : (
+          savedDeals.map((deal) => (
+            <DealCard key={deal.id} deal={deal} onRemove={removeDeal} />
+          ))
+        )}
       </ScrollView>
 
-      <BottomNavUser></BottomNavUser>
+      <BottomNavUser />
     </SafeAreaView>
   )
 }
@@ -173,6 +257,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     textDecorationLine: "line-through",
+  },
+  category: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  savedAt: {
+    fontSize: 11,
+    color: "#999",
+    marginTop: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 24,
   },
   bottomNav: {
     flexDirection: "row",

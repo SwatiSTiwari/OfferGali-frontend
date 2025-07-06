@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '../hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SavedDealsProvider } from '../contexts/SavedDealsContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -34,14 +35,16 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <SavedDealsProvider>
+          <Stack screenOptions={{ headerShown: false }}>
 
-          <Stack.Screen name="(app)" options={{ headerShown: false }} />
-          <Stack.Screen name="(retailer)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(app)" options={{ headerShown: false }} />
+            <Stack.Screen name="(retailer)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
 
-        </Stack>
-        {/* <StatusBar style="auto" /> */}
+          </Stack>
+          {/* <StatusBar style="auto" /> */}
+        </SavedDealsProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
