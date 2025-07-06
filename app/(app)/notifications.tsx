@@ -63,6 +63,58 @@ export default function NotificationScreen() {
 
       if (result.success) {
         const notificationData = result.data.notifications || result.data || [];
+        
+        // ADD COMPREHENSIVE DEBUGGING
+        console.log('=== COMPREHENSIVE NOTIFICATION DEBUG ===');
+        console.log('Current date:', new Date().toISOString());
+        console.log('Current date string:', new Date().toDateString());
+        console.log('Total notifications received:', notificationData.length);
+        
+        notificationData.forEach((notification, index) => {
+          console.log(`\n=== Notification ${index + 1} ===`);
+          console.log('Notification ID:', notification.id);
+          console.log('Message:', notification.message);
+          console.log('Has deal:', !!notification.deals);
+          
+          if (notification.deals) {
+            console.log('Deal title:', notification.deals.title);
+            console.log('Deal category:', notification.deals.category);
+            console.log('Deal expiration RAW:', notification.deals.expiration_date);
+            console.log('Deal expiration TYPE:', typeof notification.deals.expiration_date);
+            
+            // Parse and check expiry
+            if (notification.deals.expiration_date) {
+              const expiryDate = notification.deals.expiration_date;
+              console.log('Testing expiry parsing...');
+              
+              // Test different parsing methods
+              console.log('Method 1 - Direct new Date():', new Date(expiryDate));
+              
+              if (expiryDate.includes('T')) {
+                const datePart = expiryDate.split('T')[0];
+                console.log('Method 2 - Extract date part:', datePart);
+                
+                const parts = datePart.split('-');
+                if (parts.length === 3) {
+                  const year = parseInt(parts[0]);
+                  const month = parseInt(parts[1]) - 1;
+                  const day = parseInt(parts[2]);
+                  const localDate = new Date(year, month, day);
+                  console.log('Method 3 - Local date creation:', localDate);
+                  console.log('Method 3 - Local date string:', localDate.toDateString());
+                  
+                  // Compare with today
+                  const today = new Date();
+                  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                  console.log('Today only:', todayOnly.toDateString());
+                  console.log('Is expired?', localDate < todayOnly);
+                  console.log('Days difference:', Math.floor((localDate.getTime() - todayOnly.getTime()) / (1000 * 60 * 60 * 24)));
+                }
+              }
+            }
+          }
+        });
+        
         // Ensure all notifications have proper structure
         const validNotifications = notificationData.filter(notification => 
           notification && 
@@ -283,7 +335,7 @@ export default function NotificationScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.centerContainer}>
-          <FontAwesome name="spinner" size={32} color="#3498db" />
+          <FontAwesome name="spinner" size={32} color="#FF6F61" />
           <Text style={styles.loadingText}>Loading notifications...</Text>
         </View>
       </View>
@@ -340,7 +392,7 @@ export default function NotificationScreen() {
             style={styles.locationButton}
             onPress={handleLocationBasedNotifications}
           >
-            <FontAwesome name="location-arrow" size={16} color="#3498db" />
+            <FontAwesome name="location-arrow" size={16} color="#FF6F61" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRefresh}>
             <FontAwesome name="refresh" size={20} color="#333" />
@@ -354,8 +406,8 @@ export default function NotificationScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#3498db"]}
-            tintColor="#3498db"
+            colors={["#FF6F61"]}
+            tintColor="#FF6F61"
           />
         }
       >
@@ -371,7 +423,7 @@ export default function NotificationScreen() {
               style={styles.refreshButton}
               onPress={handleRefresh}
             >
-              <FontAwesome name="refresh" size={16} color="#3498db" />
+              <FontAwesome name="refresh" size={16} color="#FF6F61" />
               <Text style={styles.refreshButtonText}>Refresh</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -455,7 +507,7 @@ const styles = StyleSheet.create({
   locationButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: "#f0f8ff",
+    backgroundColor: "#fff5f4",
   },
   categoryText: {
     fontSize: 13,
@@ -486,11 +538,11 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   retryButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: "#FF6F61",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
-    shadowColor: "#3498db",
+    shadowColor: "#FF6F61",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -543,20 +595,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   refreshButtonText: {
-    color: "#3498db",
+    color: "#FF6F61",
     fontSize: 14,
     fontWeight: "500",
   },
   locationNotifyButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#3498db",
+    backgroundColor: "#FF6F61",
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 25,
     gap: 8,
     marginTop: 12,
-    shadowColor: "#3498db",
+    shadowColor: "#FF6F61",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -583,9 +635,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   unreadNotification: {
-    backgroundColor: "#f8f9ff",
+    backgroundColor: "#fff5f4",
     borderLeftWidth: 4,
-    borderLeftColor: "#3498db",
+    borderLeftColor: "#FF6F61",
   },
   dot: {
     width: 12,
@@ -597,8 +649,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   unreadDot: {
-    backgroundColor: "#3498db",
-    borderColor: "#3498db",
+    backgroundColor: "#FF6F61",
+    borderColor: "#FF6F61",
   },
   notificationContent: {
     flex: 1,
@@ -624,12 +676,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   dealContainer: {
-    backgroundColor: "#f1f8ff",
+    backgroundColor: "#fff5f4",
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: "#3498db",
+    borderLeftColor: "#FF6F61",
   },
   dealTitle: {
     fontSize: 16,
