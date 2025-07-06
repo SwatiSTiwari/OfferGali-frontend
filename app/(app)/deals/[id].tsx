@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } fr
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { getDealsById } from '@/api/deals/deals'; // Make sure to import the function
+import { useSavedDeals } from '@/contexts/SavedDealsContext';
 
 export default function DealDetails() {
   const { id } = useLocalSearchParams(); 
   const router = useRouter();
   const [deal, setDeal] = useState<any>(null);  // State to store the fetched deal
   const [loading, setLoading] = useState(true);  // Loading state for fetching data
+  const { saveDeals, isDealSaved } = useSavedDeals();
 
   useEffect(() => {
     const fetchDealDetails = async () => {
@@ -26,6 +28,39 @@ export default function DealDetails() {
     fetchDealDetails();  // Fetch the deal details when the component mounts
   }, [id]);  // Fetch when the `id` changes (i.e., when navigating to this screen)
 
+  const handleSaveDeal = async () => {
+    if (!deal) return;
+    
+    try {
+      const savedDeal = {
+        id: deal.id,
+        title: deal.title,
+        description: deal.description,
+        category: deal.category || 'General',
+        expiration_date: deal.expiration_date,
+        redemption_instructions: deal.redemption_instructions,
+        retailer_id: deal.retailer_id,
+        price: deal.price,
+        original_price: deal.original_price,
+        image: deal.image,
+        savedAt: new Date().toISOString(),
+      };
+
+      await saveDeals(savedDeal);
+      
+      Alert.alert(
+        'Success',
+        'Deal saved successfully!',
+        [
+          { text: 'OK' },
+          { text: 'View Saved', onPress: () => router.push('/(app)/saved') }
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save deal. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -41,6 +76,8 @@ export default function DealDetails() {
       </View>
     );
   }
+
+  const dealAlreadySaved = isDealSaved(deal.id);
 
   return (
     <View style={styles.container}>
@@ -121,8 +158,14 @@ export default function DealDetails() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save for Later</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, dealAlreadySaved && styles.savedButton]} 
+          onPress={handleSaveDeal}
+          disabled={dealAlreadySaved}
+        >
+          <Text style={[styles.saveButtonText, dealAlreadySaved && styles.savedButtonText]}>
+            {dealAlreadySaved ? 'Already Saved' : 'Save for Later'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.redeemButton}>
           <Text style={styles.redeemButtonText}>Redeem Now</Text>
@@ -235,6 +278,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '600',
+  },
+  savedButton: {
+    backgroundColor: '#f0f0f0',
+    borderColor: '#ccc',
+  },
+  savedButtonText: {
+    color: '#666',
   },
   redeemButton: {
     flex: 1,
