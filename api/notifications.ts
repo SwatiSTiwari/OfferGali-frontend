@@ -200,8 +200,12 @@ export const notifyNearbyDeals = async (latitude: number, longitude: number, loc
       return { success: false, message: "No token found" };
     }
 
+    console.log('=== LOCATION-BASED NOTIFICATIONS DEBUG ===');
     console.log('Creating notifications for location entry:', { latitude, longitude, locationName });
-
+    console.log('Mumbai coordinates for reference: ~19.0760, 72.8777');
+    console.log('Distance from Mumbai (rough calc):', 
+      Math.sqrt(Math.pow(latitude - 19.0760, 2) + Math.pow(longitude - 72.8777, 2)) * 111, 'km');
+    
     const response = await axios.post(`${API_URL}/notify-nearby`, {
       latitude,
       longitude,
@@ -214,7 +218,9 @@ export const notifyNearbyDeals = async (latitude: number, longitude: number, loc
       timeout: 10000
     });
 
-    console.log('Notify nearby response:', response.data);
+    console.log('=== BACKEND RESPONSE ===');
+    console.log('Response status:', response.status);
+    console.log('Response data:', JSON.stringify(response.data, null, 2));
 
     return {
       success: true,
@@ -223,43 +229,64 @@ export const notifyNearbyDeals = async (latitude: number, longitude: number, loc
     };
 
   } catch (error: any) {
-    console.error("Error creating nearby notifications:", error);
+    console.error("=== ERROR CREATING NEARBY NOTIFICATIONS ===");
+    console.error("Error message:", error.message);
     
     if (error.response) {
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", JSON.stringify(error.response.data, null, 2));
+      
       return { 
         success: false, 
         message: error.response.data?.message || error.response.data?.error || "Failed to create notifications" 
       };
     }
     
-    return { success: false, message: "Failed to create notifications" };
+    if (error.code === 'ECONNABORTED') {
+      return { success: false, message: "Request timeout - server might be slow" };
+    }
+    
+    return { success: false, message: "Failed to create notifications - network error" };
   }
 };
 
 // Helper function to get user's current location and trigger nearby deals notification
 export const triggerLocationBasedNotifications = async (locationName?: string) => {
   try {
+    console.log('=== TRIGGERING LOCATION-BASED NOTIFICATIONS ===');
+    console.log('Provided location name:', locationName);
+    
     // Request location permissions
     const { status } = await Location.requestForegroundPermissionsAsync();
+    console.log('Location permission status:', status);
+    
     if (status !== 'granted') {
       Alert.alert('Permission denied', 'Permission to access location was denied');
       return { success: false, message: "Location permission denied" };
     }
 
     // Get current location
+    console.log('Getting current location...');
     const location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
 
-    console.log('Current location:', { latitude, longitude });
+    console.log('=== CURRENT LOCATION ===');
+    console.log('Latitude:', latitude);
+    console.log('Longitude:', longitude);
+    console.log('Accuracy:', location.coords.accuracy);
 
     // If no location name provided, try to get it from reverse geocoding
     let finalLocationName = locationName;
     if (!finalLocationName) {
       try {
+        console.log('Getting location name from reverse geocoding...');
         const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+        console.log('Reverse geocode result:', reverseGeocode);
+        
         if (reverseGeocode.length > 0) {
           const address = reverseGeocode[0];
           finalLocationName = address.city || address.district || address.subregion || 'Unknown Location';
+          console.log('Detected location name:', finalLocationName);
         }
       } catch (geocodeError) {
         console.log('Reverse geocoding failed:', geocodeError);
@@ -267,12 +294,16 @@ export const triggerLocationBasedNotifications = async (locationName?: string) =
       }
     }
 
+    console.log('Final location name:', finalLocationName);
+
     // Trigger nearby deals notification
     return await notifyNearbyDeals(latitude, longitude, finalLocationName || 'Current Location');
 
   } catch (error: any) {
-    console.error("Error triggering location-based notifications:", error);
-    return { success: false, message: "Failed to get location or create notifications" };
+    console.error("=== ERROR TRIGGERING LOCATION NOTIFICATIONS ===");
+    console.error("Error message:", error.message);
+    console.error("Error code:", error.code);
+    return { success: false, message: "Failed to get location or create notifications: " + error.message };
   }
 };
 
