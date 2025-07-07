@@ -32,6 +32,8 @@ export default function RetailerDashboard() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [retailerId, setRetailerId] = useState<number | null>(null);
+  
+  const logo = require('../../assets/logo.png');
 
   useEffect(() => {
     const fetchRetailerId = async () => {
@@ -95,12 +97,9 @@ export default function RetailerDashboard() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Ionicons name="location" size={24} color="#FF6B6B" />
+          <Image source={logo} style={styles.logo} />
           <Text style={styles.headerTitle}>Retailer Dashboard</Text>
         </View>
-        <TouchableOpacity>
-          <Ionicons name="notifications-outline" size={24} color="#333" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
@@ -108,7 +107,7 @@ export default function RetailerDashboard() {
         {loading ? (
           <ActivityIndicator
             size="large"
-            color="#FF6B6B"
+            color="#FF6F61"
             style={{ marginTop: 20 }}
           />
         ) : (
@@ -180,13 +179,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-  headerContent: { flexDirection: "row", alignItems: "center", gap: 8 },
-  headerTitle: { fontSize: 18, fontWeight: "600" },
+  headerContent: { flexDirection: "row", alignItems: "center", gap: 12 },
+  headerTitle: { fontSize: 18, fontWeight: "600", color: "#333" },
+  logo: {
+    width: 60,
+    height: 45,
+  },
   content: { flex: 1, marginBottom: 76 },
   actionButtons: { flexDirection: "row", padding: 16, gap: 12 },
   addButton: {
     flex: 1,
-    backgroundColor: "#FF6B6B",
+    backgroundColor: "#FF6F61",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",

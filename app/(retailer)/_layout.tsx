@@ -5,5 +5,11 @@ export default function ReatilerLayout() {
 
 
  
-  return <Stack />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false, // Hide default headers
+      }}
+    />
+  );
 };

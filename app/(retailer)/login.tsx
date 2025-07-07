@@ -170,7 +170,11 @@ export default function RetailerLogin() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <FontAwesome name="arrow-left" size={20} color="#333" />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Retailer Sign In</Text>
+        <View style={{ width: 20 }} />
       </View>
 
       <View style={styles.iconContainer}>
@@ -239,7 +243,7 @@ export default function RetailerLogin() {
           onPress={() => promptAsync()}
           disabled={loading}
         >
-          <FontAwesome name="google" size={24} color="#DB4437" />
+          <FontAwesome name="google" size={24} color="#FF6F61" />
         </TouchableOpacity>
 
         <View style={styles.footer}>
@@ -259,13 +263,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
+    paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
+    color: '#333',
   },
   iconContainer: {
     alignItems: 'center',
@@ -319,7 +328,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   loginButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#FF6F61',
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',

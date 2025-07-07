@@ -141,43 +141,66 @@ useEffect(()=>{
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require("@/assets/logo.png")}
-          style={styles.logo}
-        />
-        <Text style={styles.title}>Retailer Sign Up</Text>
-        <Text style={styles.subtitle}>Register your business</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <FontAwesome name="arrow-left" size={20} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Retailer Sign Up</Text>
+        <View style={{ width: 20 }} />
       </View>
 
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <FontAwesome name="building-o" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput placeholder="Business Name" style={styles.input} value={form.businessName} onChangeText={handleChange("businessName")} />
+      <View style={styles.iconContainer}>
+        <Image source={logo} style={styles.logo} />
+      </View>
+
+      <View style={styles.formContainer}>
+        <Text style={styles.formTitle}>Register your business</Text>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Business Name</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="building-o" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput placeholder="Business Name" style={styles.input} value={form.businessName} onChangeText={handleChange("businessName")} />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <FontAwesome name="tag" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput placeholder="Category" style={styles.input} value={form.category} onChangeText={handleChange("category")} />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Category</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="tag" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput placeholder="Category" style={styles.input} value={form.category} onChangeText={handleChange("category")} />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <FontAwesome name="map-marker" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput placeholder="Location" style={styles.input} value={form.location} onChangeText={handleChange("location")} />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Location</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="map-marker" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput placeholder="Location" style={styles.input} value={form.location} onChangeText={handleChange("location")} />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <FontAwesome name="phone" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput placeholder="Contact Number" style={styles.input} value={form.contactNumber} onChangeText={handleChange("contactNumber")} keyboardType="phone-pad" />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Contact Number</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="phone" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput placeholder="Contact Number" style={styles.input} value={form.contactNumber} onChangeText={handleChange("contactNumber")} keyboardType="phone-pad" />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput placeholder="Email" style={styles.input} value={form.email} onChangeText={handleChange("email")} keyboardType="email-address" />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Email</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="envelope-o" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput placeholder="Email" style={styles.input} value={form.email} onChangeText={handleChange("email")} keyboardType="email-address" />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
-          <TextInput placeholder="Password" style={styles.input} value={form.password} onChangeText={handleChange("password")} secureTextEntry />
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.inputContainer}>
+            <FontAwesome name="lock" size={20} color="#666" style={styles.inputIcon} />
+            <TextInput placeholder="Password" style={styles.input} value={form.password} onChangeText={handleChange("password")} secureTextEntry />
+          </View>
         </View>
 
         <TouchableOpacity style={styles.signupButton} onPress={handleRegister}>
@@ -193,12 +216,14 @@ useEffect(()=>{
         <Text style={styles.socialTitle}>Sign up with Google</Text>
 
         <TouchableOpacity style={styles.googleButton} onPress={() => promptAsync()}>
-          <FontAwesome name="google" size={24} color="#DB4437" />
+          <FontAwesome name="google" size={24} color="#FF6F61" />
         </TouchableOpacity>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
-          <Link href="/(retailer)/login" style={styles.link}>Sign in</Link>
+          <TouchableOpacity onPress={() => router.push("/(retailer)/login")}>
+            <Text style={styles.link}>Sign in</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -208,108 +233,127 @@ useEffect(()=>{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: '#fff',
   },
   header: {
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 50,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  iconContainer: {
+    alignItems: 'center',
     marginTop: 40,
-    marginBottom: 40,
+    marginBottom: 24,
   },
   logo: {
-    width: 100,
-    height: 40,
-    resizeMode: "contain",
-    marginBottom: 10,
+    width: 150,
+    height: 60,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "600",
+  formContainer: {
+    margin: 20,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8F5E9',
+    backgroundColor: '#fff',
   },
-  subtitle: {
+  formTitle: {
     fontSize: 14,
-    color: "#666",
+    color: '#333',
+    marginBottom: 24,
+    textAlign: 'center',
   },
-  form: {
-    flex: 1,
-    paddingBottom: 20,
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
   },
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "#E8F5E9",
+    borderColor: '#E8F5E9',
     borderRadius: 8,
-    paddingHorizontal: 16,
-    height: 48,
-    marginBottom: 16,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
   },
   inputIcon: {
     marginRight: 10,
+    width: 20,
+    textAlign: 'center',
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: "#333",
+    height: 44,
+    fontSize: 14,
+    color: '#333',
   },
   signupButton: {
-    backgroundColor: "#FF6B6B",
-    height: 48,
+    backgroundColor: '#FF6F61',
+    padding: 14,
     borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 8,
   },
   signupButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: 24,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#eee",
+    backgroundColor: '#eee',
   },
   dividerText: {
     marginHorizontal: 16,
-    color: "#666",
+    color: '#666',
   },
   socialTitle: {
-    textAlign: "center",
-    color: "#666",
+    textAlign: 'center',
+    color: '#666',
     marginBottom: 16,
   },
   googleButton: {
-    alignSelf: "center",
+    alignSelf: 'center',
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
     borderRadius: 24,
     width: 48,
     height: 48,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 20,
-    marginBottom: 40,
-    paddingVertical: 10,
   },
   footerText: {
-    color: "#666",
+    color: '#666',
     fontSize: 14,
   },
   link: {
-    color: "#2196F3",
-    fontWeight: "500",
+    color: '#2196F3',
     fontSize: 14,
-    marginLeft: 5,
+    fontWeight: '500',
   },
 });

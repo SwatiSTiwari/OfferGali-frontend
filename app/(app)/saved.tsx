@@ -72,24 +72,21 @@ const DealCard = ({ deal, onRemove }: DealProps) => {
       </View>
       <View style={styles.dealContent}>
         <View style={styles.dealHeader}>
-          <Text style={styles.dealTitle}>{deal.title}</Text>
+          <Text style={styles.dealTitle} numberOfLines={2}>{deal.title}</Text>
           <TouchableOpacity onPress={handleRemove}>
-            <Ionicons name="heart" size={24} color="#FF4545" />
+            <Ionicons name="heart" size={20} color="#FF4545" />
           </TouchableOpacity>
         </View>
         <Text style={styles.validUntil}>{formatExpiryDate(deal.expiration_date)}</Text>
-        <Text style={styles.category}>🏷️ {deal.category}</Text>
+        <Text style={styles.category} numberOfLines={1}>🏷️ {deal.category}</Text>
         <View style={styles.priceContainer}>
           <Text style={styles.currentPrice}>
-            {deal.price ? `₹${deal.price}` : 'Price not available'}
+            {deal.price ? `₹${deal.price}` : 'N/A'}
           </Text>
           {deal.original_price && (
             <Text style={styles.originalPrice}>₹{deal.original_price}</Text>
           )}
         </View>
-        <Text style={styles.savedAt}>
-          Saved on {new Date(deal.savedAt).toLocaleDateString()}
-        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -159,9 +156,11 @@ export default function SavedDeals() {
             </Text>
           </View>
         ) : (
-          savedDeals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} onRemove={removeDeal} />
-          ))
+          <View style={styles.dealsGrid}>
+            {savedDeals.map((deal) => (
+              <DealCard key={deal.id} deal={deal} onRemove={removeDeal} />
+            ))}
+          </View>
         )}
       </ScrollView>
 
@@ -210,19 +209,26 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
+  dealsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingBottom: 80,
+  },
   dealCard: {
-    flexDirection: "row",
+    width: '48%',
     backgroundColor: "#FFF5EB",
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
   },
   dealImageContainer: {
-    marginRight: 12,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   dealImage: {
-    width: 80,
-    height: 80,
+    width: '100%',
+    height: 100,
     backgroundColor: "#E0E0E0",
     borderRadius: 8,
   },
@@ -233,33 +239,36 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-  },
-  dealTitle: {
-    fontSize: 16,
-    fontWeight: "600",
     marginBottom: 4,
   },
-  validUntil: {
+  dealTitle: {
     fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+    marginRight: 8,
+  },
+  validUntil: {
+    fontSize: 12,
     color: "#666",
     marginBottom: 4,
   },
   priceContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 4,
   },
   currentPrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
     marginRight: 8,
   },
   originalPrice: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#666",
     textDecorationLine: "line-through",
   },
   category: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#666",
     marginBottom: 4,
   },
