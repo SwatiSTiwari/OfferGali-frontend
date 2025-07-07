@@ -159,10 +159,6 @@ export default function Login() {
           <TouchableOpacity style={styles.socialButton} onPress={() => promptAsync()}>
             <FontAwesome name="google" size={20} color="#DB4437" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome name="facebook" size={20} color="#4267B2" />
-          </TouchableOpacity>
-
         </View>
       </View>
     </View>

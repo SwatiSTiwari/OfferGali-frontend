@@ -156,9 +156,6 @@ export default function RegisterUser() {
           <TouchableOpacity style={styles.socialButton} onPress={() => promptAsync()}>
             <FontAwesome name="google" size={24} color="#1877F2" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome name="apple" size={24} color="#000" />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>

@@ -263,13 +263,9 @@ export default function Home() {
         <View style={styles.spaDealsContainer}>
           <Text style={styles.sectionTitle}>Nearby Deals</Text>
           <Text style={styles.sectionSubtitle}>Special offers close to you</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.spaDealsScroll}
-            contentContainerStyle={styles.spaDealsContainer}
-          >
-            {filteredDeals.map((deal) => (
+          
+          <View style={styles.dealsGrid}>
+            {filteredDeals.map((deal, index) => (
               <Link href={`/deals/${deal.id}`} key={deal.id} asChild>
                 <TouchableOpacity style={styles.spaDealCard}>
                   <TouchableOpacity 
@@ -278,8 +274,8 @@ export default function Home() {
                   >
                     <FontAwesome 
                       name={isDealSaved(deal.id.toString()) ? "heart" : "heart-o"} 
-                      size={20} 
-                      color="#FF6B6B" 
+                      size={16} 
+                      color="#FF6F61" 
                     />
                   </TouchableOpacity>
                   <Image
@@ -298,18 +294,20 @@ export default function Home() {
                   <View style={styles.spaDealInfo}>
                     <View style={styles.spaDealMeta}>
                       <View style={styles.spaDealMetaItem}>
-                        <FontAwesome name="map-marker" size={12} color="#666" />
+                        <FontAwesome name="map-marker" size={10} color="#666" />
                         <Text style={styles.spaDealMetaText}>{deal.distance}</Text>
                       </View>
                       {new Date(deal.expiration_date).getTime() > new Date().getTime() && (
                         <View style={styles.spaDealMetaItem}>
-                          <FontAwesome name="clock-o" size={12} color="#666" />
+                          <FontAwesome name="clock-o" size={10} color="#666" />
                           <Text style={styles.spaDealMetaText}>Ends Today</Text>
                         </View>
                       )}
                     </View>
-                    <Text style={styles.spaDealTitle}>
+                    <Text style={styles.spaDealTitle} numberOfLines={2}>
                       {deal.title}
+                    </Text>
+                    <Text style={styles.spaDealRetailer} numberOfLines={1}>
                       {deal.retailer_name}
                     </Text>
                     <Text style={styles.spaDealPrice}>
@@ -320,38 +318,6 @@ export default function Home() {
                   </View>
                 </TouchableOpacity>
               </Link>
-            ))}
-          </ScrollView>
-        </View>
-
-          <View style={styles.featuredDeal}>
-          <View style={styles.featuredContent}>
-            <Text style={styles.featuredTitle}>Buy 1 Get 1 Free</Text>
-            <Text style={styles.featuredDescription}>
-              Double your delights from the top restos in town
-            </Text>
-            <TouchableOpacity style={styles.viewButton}>
-              <Text style={styles.viewButtonText}>View</Text>
-            </TouchableOpacity>
-          </View>
-          <Image
-            source={require('../../assets/pizza.png')}
-            style={styles.featuredImage}
-          />
-        </View>
-
-        <View style={styles.shopCategories}>
-          <Text style={styles.sectionTitle}>Shop by categories</Text>
-          <Text style={styles.sectionSubtitle}>Awesome deals near you</Text>
-          <View style={styles.categoryGrid}>
-            {shopCategories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[styles.categoryCard, { backgroundColor: category.backgroundColor }]}
-              >
-                <Image source={category.image} style={styles.categoryImage} />
-                <Text style={styles.categoryName}>{category.name}</Text>
-              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -367,35 +333,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingBottom: 80, // Add space for bottom navigation
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 60,
+    paddingTop: 50,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-
+    gap: 12,
   },
   logo: {
-    width: 50,
-    height: 80,
-    borderRadius: 20,
+    width: 40,
+    height: 30,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
+    color: '#333',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     margin: 16,
-    padding: 12,
+    marginTop: 12,
+    marginBottom: 12,
+    padding: 10,
     backgroundColor: '#f5f5f5',
-    borderRadius: 25,
+    borderRadius: 20,
     gap: 8,
   },
   searchInput: {
@@ -408,28 +380,25 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingHorizontal: 16,
     gap: 8,
-
   },
   categoryChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f2faf2',
-    marginRight: 8,
-
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   categoryChipSelected: {
-    backgroundColor: '#d2f7d2',
-
-
-
+    backgroundColor: '#FF6F61',
+    borderColor: '#FF6F61',
   },
   categoryChipText: {
     color: '#666',
     fontSize: 14,
   },
   categoryChipTextSelected: {
-    color: '#2E7D32',
+    color: '#fff',
     fontWeight: '500',
   },
   featuredDeal: {
@@ -482,84 +451,96 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   spaDealsContainer: {
-    paddingHorizontal: 10,
-    gap: 10,
+    paddingHorizontal: 16,
+  },
+  dealsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   spaDealCard: {
-    width: 200,
+    width: '48%',
     backgroundColor: '#f2faf2',
     borderRadius: 12,
     overflow: 'hidden',
-    marginRight: 16,
-
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 4 }, // Increased shadow height for better visibility
-    shadowOpacity: 0.3, // Slightly higher opacity for a more prominent shadow
-    shadowRadius: 6, // Increased shadow radius
-
-    // Shadow for Android
-    elevation: 8,
-
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   spaDealImage: {
     width: '100%',
-    height: 180,
+    height: 120,
   },
   heartButton: {
     position: 'absolute',
-    right: 12,
-    top: 12,
+    right: 8,
+    top: 8,
     zIndex: 1,
     backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 8,
+    borderRadius: 15,
+    padding: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   spaDealOverlay: {
     position: 'absolute',
-    left: 12,
-    top: 12,
-    backgroundColor: '#FF6B6B',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    left: 8,
+    top: 8,
+    backgroundColor: '#FF6F61',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
   },
   spaDealDiscount: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 12,
   },
   spaDealInfo: {
-    padding: 12,
+    padding: 10,
   },
   spaDealTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 4,
+    color: '#333',
+  },
+  spaDealRetailer: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 6,
   },
   spaDealMeta: {
     flexDirection: 'row',
-    gap: 16,
+    justifyContent: 'space-between',
+    marginBottom: 6,
   },
   spaDealMetaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
   },
   spaDealMetaText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
   },
   spaDealPrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#2E7D32',
-    marginBottom: 4,
+    color: '#FF6F61',
   },
   originalPrice: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#888',
     textDecorationLine: 'line-through',
-    marginLeft: 6,
+    marginLeft: 4,
   },
   shopCategories: {
     padding: 16,

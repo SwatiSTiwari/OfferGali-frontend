@@ -135,11 +135,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6F61',
     color: 'white',
     fontWeight: 'bold',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    borderRadius: 20,
     textAlign: 'center',
-    width: 180, // Adjusted for better spacing
+    width: 150, // Made smaller for better visual balance
   },
 });
