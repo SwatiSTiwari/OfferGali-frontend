@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Link, router } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from "expo-web-browser"
 import { useEffect } from 'react';
 import axios from 'axios';
 import * as Notifications from 'expo-notifications';
+import { FontAwesome } from '@expo/vector-icons';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -17,7 +18,7 @@ Notifications.setNotificationHandler({
 WebBrowser.maybeCompleteAuthSession()
 
 export default function OnboardingScreen() {
-  const logo = require('../assets/logo.png');
+  const logo = require('../assets/logo1.svg'); // Ensure the logo is in SVG format
 
 useEffect(() => {
   const subscription = Notifications.addNotificationReceivedListener(notification => {
@@ -49,8 +50,17 @@ useEffect(() => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
+        <View style={styles.topBar}>
+          <TouchableOpacity 
+            style={styles.feedbackButton}
+            onPress={() => router.push('/(app)/feedback')}
+          >
+            <FontAwesome name="comment" size={20} color="#FF6F61" />
+            <Text style={styles.feedbackButtonText}>Feedback</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.logoContainer}>
-          <Image source={logo} style={styles.logo} />
+          {/* <Image source={logo} style={styles.logo} /> */}
           <Text style={styles.logoText}>
             <Text style={styles.orangeText}>OfferGali</Text>
           </Text>
@@ -92,6 +102,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 60,
   },
+  topBar: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
+  feedbackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FF6F61',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  feedbackButtonText: {
+    color: '#FF6F61',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
   logoContainer: {
     flexDirection: 'row', // Align logo and text horizontally
     alignItems: 'center',
@@ -104,6 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     color: 'black',
+    
     marginLeft: -2, // Adjusts text closer to logo
   },
   orangeText: {
@@ -113,7 +150,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: 'bold',
-    marginTop: 8,
+
   },
   imageContainer: {
     flex: 1,
