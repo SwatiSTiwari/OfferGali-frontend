@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 60,
+    paddingTop: 10,
     paddingBottom: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 21,
     fontWeight: '600',
     color: '#333',
   },
