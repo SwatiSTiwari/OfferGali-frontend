@@ -11,7 +11,7 @@ web-build/
 android/
 expo-env.d.ts
 
-android/app/google-services.json
+# android/app/google-services.json
 
 # Native
 *.orig.*
