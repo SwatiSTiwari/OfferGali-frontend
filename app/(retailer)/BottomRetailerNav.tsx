@@ -45,6 +45,17 @@ const BottomRetailerNav = () => {
                <Text style={styles.navText}>Profile</Text>
              </TouchableOpacity>
            </Link>
+
+           <Link href={{
+            pathname: "/(app)/feedback",
+            params: { role: "retailer" }, // add your props here
+           }} asChild>
+                     <TouchableOpacity style={{alignItems: 'center'}}>
+                       <FontAwesome name="comment" size={24} color="#666"/>
+               <Text style={styles.navText}>Feedback</Text>
+
+                     </TouchableOpacity>
+                   </Link>
          </View>
   )
 }

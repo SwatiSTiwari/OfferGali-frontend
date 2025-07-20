@@ -38,7 +38,7 @@ export default function NotificationScreen() {
     user_id: string;
     deal_id?: string;
     message: string;
-    is_read: boolean; // Updated to match backend field name
+    read: boolean; // Updated to match backend field name
     created_at: string;
     deals?: Deal; // This comes from the Supabase join
   }
@@ -70,53 +70,54 @@ export default function NotificationScreen() {
         console.log('Current date string:', new Date().toDateString());
         console.log('Total notifications received:', notificationData.length);
         
-        notificationData.forEach((notification, index) => {
-          console.log(`\n=== Notification ${index + 1} ===`);
-          console.log('Notification ID:', notification.id);
-          console.log('Message:', notification.message);
-          console.log('Has deal:', !!notification.deals);
+        // notificationData.forEach((notification, index) => {
+        //   console.log(`\n=== Notification ${index + 1} ===`);
+        //   console.log('Notification ID:', notification.id);
+        //   console.log('Message:', notification.message);
+        //   console.log('Has deal:', !!notification.deals);
           
-          if (notification.deals) {
-            console.log('Deal title:', notification.deals.title);
-            console.log('Deal category:', notification.deals.category);
-            console.log('Deal expiration RAW:', notification.deals.expiration_date);
-            console.log('Deal expiration TYPE:', typeof notification.deals.expiration_date);
+        //   if (notification.deals) {
+        //     console.log('Deal title:', notification.deals.title);
+        //     console.log('Deal category:', notification.deals.category);
+        //     console.log('Deal expiration RAW:', notification.deals.expiration_date);
+        //     console.log('Deal expiration TYPE:', typeof notification.deals.expiration_date);
             
-            // Parse and check expiry
-            if (notification.deals.expiration_date) {
-              const expiryDate = notification.deals.expiration_date;
-              console.log('Testing expiry parsing...');
+        //     // Parse and check expiry
+        //     if (notification.deals.expiration_date) {
+        //       const expiryDate = notification.deals.expiration_date;
+        //       console.log('Testing expiry parsing...');
               
-              // Test different parsing methods
-              console.log('Method 1 - Direct new Date():', new Date(expiryDate));
+        //       // Test different parsing methods
+        //       console.log('Method 1 - Direct new Date():', new Date(expiryDate));
               
-              if (expiryDate.includes('T')) {
-                const datePart = expiryDate.split('T')[0];
-                console.log('Method 2 - Extract date part:', datePart);
+        //       if (expiryDate.includes('T')) {
+        //         const datePart = expiryDate.split('T')[0];
+        //         console.log('Method 2 - Extract date part:', datePart);
                 
-                const parts = datePart.split('-');
-                if (parts.length === 3) {
-                  const year = parseInt(parts[0]);
-                  const month = parseInt(parts[1]) - 1;
-                  const day = parseInt(parts[2]);
-                  const localDate = new Date(year, month, day);
-                  console.log('Method 3 - Local date creation:', localDate);
-                  console.log('Method 3 - Local date string:', localDate.toDateString());
+        //         const parts = datePart.split('-');
+        //         if (parts.length === 3) {
+        //           const year = parseInt(parts[0]);
+        //           const month = parseInt(parts[1]) - 1;
+        //           const day = parseInt(parts[2]);
+        //           const localDate = new Date(year, month, day);
+        //           console.log('Method 3 - Local date creation:', localDate);
+        //           console.log('Method 3 - Local date string:', localDate.toDateString());
                   
-                  // Compare with today
-                  const today = new Date();
-                  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                  console.log('Today only:', todayOnly.toDateString());
-                  console.log('Is expired?', localDate < todayOnly);
-                  console.log('Days difference:', Math.floor((localDate.getTime() - todayOnly.getTime()) / (1000 * 60 * 60 * 24)));
-                }
-              }
-            }
-          }
-        });
+        //           // Compare with today
+        //           const today = new Date();
+        //           const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        //           console.log('Today only:', todayOnly.toDateString());
+        //           console.log('Is expired?', localDate < todayOnly);
+        //           console.log('Days difference:', Math.floor((localDate.getTime() - todayOnly.getTime()) / (1000 * 60 * 60 * 24)));
+        //         }
+        //       }
+        //     }
+        //   }
+        // });
         
         // Ensure all notifications have proper structure
-        const validNotifications = notificationData.filter(notification => 
+        
+        const validNotifications= notificationData.filter(notification => 
           notification && 
           typeof notification === 'object' && 
           notification.id
@@ -153,7 +154,7 @@ export default function NotificationScreen() {
         setNotifications((prevNotifications) =>
           prevNotifications.map((notification) =>
             notification.id === notificationId
-              ? { ...notification, is_read: true }
+              ? { ...notification, read: true }
               : notification,
           ),
         );
@@ -384,7 +385,7 @@ export default function NotificationScreen() {
         <Text style={styles.headerTitle}>
           Notifications
           {notifications.length > 0
-            ? ` (${notifications.filter((n) => !n.is_read).length})`
+            ? ` (${notifications.filter((n) => !n.read).length})`
             : ""}
         </Text>
         <View style={styles.headerActions}>
@@ -440,7 +441,7 @@ export default function NotificationScreen() {
           <>
             {/* Unread notifications first */}
             {notifications
-              .filter((n) => !n.is_read)
+              .filter((n) => !n.read)
               .map((notification) => (
                 <TouchableOpacity
                   key={notification.id}
@@ -448,14 +449,14 @@ export default function NotificationScreen() {
                   onPress={() => handleNotificationClick(notification.id)}
                   activeOpacity={0.7}
                 >
-                  {renderNotificationDot(notification.is_read)}
+                  {renderNotificationDot(notification.read)}
                   {renderNotificationContent(notification)}
                 </TouchableOpacity>
               ))}
 
             {/* Read notifications */}
             {notifications
-              .filter((n) => n.is_read)
+              .filter((n) => n.read)
               .map((notification) => (
                 <TouchableOpacity
                   key={notification.id}
@@ -463,7 +464,7 @@ export default function NotificationScreen() {
                   onPress={() => handleNotificationClick(notification.id)}
                   activeOpacity={0.7}
                 >
-                  {renderNotificationDot(notification.is_read)}
+                  {renderNotificationDot(notification.read)}
                   {renderNotificationContent(notification)}
                 </TouchableOpacity>
               ))}

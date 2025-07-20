@@ -50,7 +50,7 @@ useEffect(() => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <View style={styles.topBar}>
+        {/* <View style={styles.topBar}>
           <TouchableOpacity 
             style={styles.feedbackButton}
             onPress={() => router.push('/(app)/feedback')}
@@ -58,7 +58,7 @@ useEffect(() => {
             <FontAwesome name="comment" size={20} color="#FF6F61" />
             <Text style={styles.feedbackButtonText}>Feedback</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
         <View style={styles.logoContainer}>
           {/* <Image source={logo} style={styles.logo} /> */}
           <Text style={styles.logoText}>

@@ -1,8 +1,8 @@
 import React from 'react'
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Link, usePathname } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+
 
 const BottomNavUser = () => {
   const pathname = usePathname();
@@ -101,7 +101,34 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: '#666',
   },
+    topBar: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
+  feedbackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FF6F61',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  feedbackButtonText: {
+    color: '#FF6F61',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
 }
+
 )
 
 export default BottomNavUser;

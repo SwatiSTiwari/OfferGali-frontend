@@ -12,6 +12,8 @@ import {
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { submitFeedback } from '@/api/profile';
+import { useLocalSearchParams } from 'expo-router';
 
 interface FeedbackForm {
   role: 'user' | 'retailer';
@@ -20,8 +22,11 @@ interface FeedbackForm {
 }
 
 export default function FeedbackScreen() {
+  const params = useLocalSearchParams();
+    const currrole = params.role as string;
+ 
   const [form, setForm] = useState<FeedbackForm>({
-    role: 'user',
+    role: currrole === 'retailer' ? 'retailer' : 'user',
     message: '',
     rating: 0,
   });
@@ -41,20 +46,14 @@ export default function FeedbackScreen() {
     setIsSubmitting(true);
 
     try {
-      // Here you would typically send the feedback to your backend API
-      // For now, we'll just simulate the submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      Alert.alert(
-        'Success',
-        'Thank you for your feedback! We appreciate your input.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      const response = await submitFeedback(form);
+      if (response.success) {
+        Alert.alert('Success', 'Thank you for your feedback!');
+        setForm({ role: currrole === 'retailer' ? 'retailer' : 'user', message: '', rating: 0 }); // Reset form
+        router.back(); // Navigate back after submission
+      } else {
+        Alert.alert('Error', response.message || 'Failed to submit feedback');
+      }     
     } catch (error) {
       Alert.alert('Error', 'Failed to submit feedback. Please try again.');
     } finally {
@@ -93,7 +92,7 @@ export default function FeedbackScreen() {
 
       <View style={styles.form}>
         {/* Role Selection */}
-        <View style={styles.formGroup}>
+        {/* <View style={styles.formGroup}>
           <Text style={styles.label}>Your Role</Text>
           <View style={styles.pickerContainer}>
             <Picker
@@ -105,7 +104,7 @@ export default function FeedbackScreen() {
               <Picker.Item label="Retailer" value="retailer" />
             </Picker>
           </View>
-        </View>
+        </View> */}
 
         {/* Rating */}
         <View style={styles.formGroup}>
@@ -154,6 +153,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    paddingTop: 20,
   },
   header: {
     flexDirection: 'row',

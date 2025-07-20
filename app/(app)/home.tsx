@@ -215,11 +215,21 @@ export default function Home() {
           <Image source={logo} style={styles.logo} />
           <Text style={styles.headerTitle}>Nearby Deals</Text>
         </View>
+        <View style={styles.headerLeft}>
+        <Link href={{
+            pathname: "/(app)/feedback",
+            params: { role: "user" }, // add your props here
+           }} asChild>
+          <TouchableOpacity style={{alignItems: 'center'}}>
+            <FontAwesome name="comment" size={24} color="#FF6F61" />
+          </TouchableOpacity>
+        </Link>
         <Link href="/(app)/notifications" asChild>
           <TouchableOpacity style={{alignItems: 'center'}}>
             <FontAwesome name="bell" size={24} color="#666" />
           </TouchableOpacity>
         </Link>
+        </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>

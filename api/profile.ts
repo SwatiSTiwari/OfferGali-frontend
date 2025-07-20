@@ -147,3 +147,25 @@ export const checkIfLoggedIn = async (userType: string) => {
 
     }
 };
+
+export const submitFeedback = async (feedback: object) => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      return { success: false, message: "No token found" };
+    }
+
+    const response = await axios.post(`${API_URL}/feedback`, feedback, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.log(error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to insert data",
+    };
+  }
+};
